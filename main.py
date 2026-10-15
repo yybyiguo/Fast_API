@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from models.news import Base
-from routers import news
+from models.user import Base
+from routers import news,user
 from config.db_config import async_engine
 
 
@@ -28,3 +28,4 @@ async def root():
     }
 
 app.include_router(news.router)
+app.include_router(user.router)
