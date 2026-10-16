@@ -1,0 +1,15 @@
+# 环境变量文件
+.env
+.env.*
+!.env.example
+
+# python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+.venv/
+
+# vscode
+.vscode/
