@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from models.user import Base
 from routers import news,user
 from config.db_config import async_engine
+from utils.exception_handlers import register_exception_handlers
 
 
 async def create_table():
@@ -19,6 +20,9 @@ async def lifespan(app: FastAPI):
     print("✅ 数据库连接已关闭")
 
 app = FastAPI(lifespan=lifespan)
+
+register_exception_handlers(app)
+
 @app.get('/')
 async def root():
     return {
