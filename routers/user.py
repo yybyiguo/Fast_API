@@ -19,16 +19,12 @@ async def register(userData:UserRequest,db:AsyncSession=Depends(get_db)):
     users= await user.create_user(db,userData)
     token= await user.create_token(db,users.id)
     return success_response(message='注册成功',data=userAuthResponse(token=token,userInfo=userInfoResponse.model_validate(users)))
-    # return {
-    #     "code":200,
-    #     "msg":'注册成功',
-    #     'data':{
-    #         'token':token,
-    #         'userInfo':{
-    #             'id':users.id,
-    #             'username':users.username,
-    #             'bio':users.bio,
-    #             'avatar':users.avatar
-    #         }
-    #     }
-    #     }
+
+@router.post('/login')
+async def login(user_data:UserRequest,db:AsyncSession=Depends(get_db)):
+    isuser = await user.authenticate_user(db,user_data.username,user_data.password)
+    if not isuser : 
+        raise HTTPException(status_code=401,detail='用户或密码错误')
+    token=await user.create_token(db,isuser.id)
+    response_data=userAuthResponse(token=token,userInfo=userInfoResponse.model_validate(isuser))
+    return success_response(message='登录成功',data=response_data)
