@@ -40,3 +40,6 @@ class UserToken(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False,autoincrement=True, comment="用户ID")
     token: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, comment="token")
     expires_at: Mapped[str] = mapped_column(String(50), nullable=False, comment="过期时间")
+
+
+
