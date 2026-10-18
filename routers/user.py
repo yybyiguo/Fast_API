@@ -3,10 +3,12 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine, async_sessionmaker, AsyncSession
 )
 from config.db_config import get_db
+from models.user import User
 from schemas.users import UserRequest, userAuthResponse, userInfoResponse
 from curd import user
 from starlette import status
 
+from utils import auth
 from utils.response import success_response
 
 router=APIRouter(prefix='/api/user',tags=['user'])
@@ -28,3 +30,7 @@ async def login(user_data:UserRequest,db:AsyncSession=Depends(get_db)):
     token=await user.create_token(db,isuser.id)
     response_data=userAuthResponse(token=token,userInfo=userInfoResponse.model_validate(isuser))
     return success_response(message='登录成功',data=response_data)
+
+@router.get('/info')
+async def get_user_info(user:User=Depends(auth.get_current_user)):
+    return success_response(message='获取个人信息成功',data=userInfoResponse.model_validate(user))

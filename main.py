@@ -4,6 +4,7 @@ from models.user import Base
 from routers import news,user
 from config.db_config import async_engine
 from utils.exception_handlers import register_exception_handlers
+from fastapi.middleware.cors import CORSMiddleware
 
 
 async def create_table():
@@ -22,6 +23,18 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 register_exception_handlers(app)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://127.0.0.1:5500",
+        "http://localhost:5500",
+    ],
+    allow_credentials=False,       # 允许携带 cookie
+    allow_methods=["*"],          # 允许的请求方法
+    allow_headers=["*"],          # 允许的请求头
+)
+
 
 @app.get('/')
 async def root():

@@ -31,7 +31,7 @@ async def create_token(db:AsyncSession,user_id:int):
     result=await db.execute(stmt)
     user_token=result.scalar_one_or_none()
     if user_token:
-        user_token.token=token,
+        user_token.token=token
         user_token.expires_at=expires_at
     else:
         user_token=UserToken(id=user_id,token=token,expires_at=expires_at)
@@ -47,3 +47,13 @@ async def authenticate_user(db:AsyncSession,user_name:str,password:str):
     if not security.verify_password(password,user.password):
         return None
     return user
+
+
+async def get_user_by_token(db:AsyncSession,token:str):
+    stmt=select(UserToken).where(UserToken.token==token)
+    result= await db.execute(stmt)
+    db_token=result.scalar_one_or_none()
+    if not db_token or db_token.expires_at<datetime.now():
+        return None
+    result2=await db.execute(select(User).where(db_token.id==User.id))
+    return result2.scalar_one_or_none()
