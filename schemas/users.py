@@ -31,3 +31,9 @@ class userAuthResponse(BaseModel):
         from_attributes=True,#允许从ORM对象取值
         populate_by_name=True
     )
+
+class userUpdateRequest(BaseModel):
+    nickname:str|None
+    avatar:str|None
+    gender:str|None
+    bio:str|None

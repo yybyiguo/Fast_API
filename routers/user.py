@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import (
 )
 from config.db_config import get_db
 from models.user import User
-from schemas.users import UserRequest, userAuthResponse, userInfoResponse
+from schemas.users import UserRequest, userAuthResponse, userInfoResponse, userUpdateRequest
 from curd import user
 from starlette import status
 
@@ -34,3 +34,12 @@ async def login(user_data:UserRequest,db:AsyncSession=Depends(get_db)):
 @router.get('/info')
 async def get_user_info(user:User=Depends(auth.get_current_user)):
     return success_response(message='获取个人信息成功',data=userInfoResponse.model_validate(user))
+
+@router.put("/update")
+async def update_user_info(
+    user_data: userUpdateRequest,
+    User:User=Depends(auth.get_current_user),
+    db:AsyncSession=Depends(get_db)
+):
+    await user.update_user(db,User.username,user_data)
+    return success_response(message='修改成功',data=userInfoResponse.model_validate(User))
