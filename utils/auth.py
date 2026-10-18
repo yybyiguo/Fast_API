@@ -7,7 +7,6 @@ from curd import user
 
 bearer_scheme = HTTPBearer(auto_error=False)
 
-# 根据token查询用户
 async def get_current_user(
     db: AsyncSession = Depends(get_db),
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),

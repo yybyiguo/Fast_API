@@ -43,3 +43,16 @@ async def update_user_info(
 ):
     await user.update_user(db,User.username,user_data)
     return success_response(message='修改成功',data=userInfoResponse.model_validate(User))
+
+@router.put('password')
+async def update_password(
+    new_password:str,
+    User:User=Depends(auth.get_current_user),
+    db:AsyncSession=Depends(get_db)
+):
+    result= await user.update_user_password(db,new_password,User)
+    if not result:
+        raise HTTPException(status_code=404,detail='用户不存在')
+    return success_response(message='修改成功',data=userInfoResponse.model_validate(User))
+
+

@@ -18,6 +18,7 @@ class UserInfoBase(BaseModel):
 class userInfoResponse(UserInfoBase):
     id:int
     username:str
+    password:str
     model_config=ConfigDict(
         from_attributes=True,#允许从ORM对象取值
         populate_by_name=True

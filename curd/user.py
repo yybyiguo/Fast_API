@@ -8,7 +8,7 @@ from sqlalchemy import func, select, update
 from models.user import User, UserToken
 from schemas.users import UserRequest, userUpdateRequest
 from utils import security
-from utils.security import get_password_hash
+from utils.security import get_password_hash, verify_password
 import uuid
 
 async def get_user_by_username(db:AsyncSession,username:str):
@@ -49,7 +49,6 @@ async def authenticate_user(db:AsyncSession,user_name:str,password:str):
         return None
     return user
 
-
 async def get_user_by_token(db:AsyncSession,token:str):
     stmt=select(UserToken).where(UserToken.token==token)
     result= await db.execute(stmt)
@@ -67,4 +66,18 @@ async def update_user(db:AsyncSession,user_name:str,user_data:userUpdateRequest)
     if result.rowcount==0:
         raise HTTPException(status_code=404,detail='用户不存在')
     updated_user= get_user_by_username(db,user_name)
+    return updated_user
+
+
+async def update_user_password(db:AsyncSession,new_password:str,user:User):
+    ispass = verify_password(new_password,user.password)
+    if not ispass :
+        return None
+    pw=get_password_hash(new_password)
+    query= update(User).where(User.username==user.username).values(password=pw)
+    result =await db.execute(query)
+    await db.commit()
+    if result.rowcount==0:
+        raise HTTPException(status_code=404,detail='用户不存在')
+    updated_user= await get_user_by_username(db,user.username)
     return updated_user
