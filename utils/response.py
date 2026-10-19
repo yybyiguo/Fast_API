@@ -8,4 +8,5 @@ def success_response(message:str='success',data=None):
         'message':message,
         'data':data
     }
+    # 为了可以将fastapi对象也转为json，没用
     return JSONResponse(jsonable_encoder(content))

@@ -1,10 +1,12 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from models.user import Base
-from routers import news,user
+from models.favorite import Base
+from routers import favorite, history, news,user
 from config.db_config import async_engine
 from utils.exception_handlers import register_exception_handlers
 from fastapi.middleware.cors import CORSMiddleware
+
+from utils.response import success_response
 
 
 async def create_table():
@@ -12,7 +14,7 @@ async def create_table():
         await conn.run_sync(Base.metadata.create_all)
     print("✅ 数据库表创建成功！")
 
-#装饰器快速创建异步上下文管理器
+# 装饰器快速创建异步上下文管理器
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await create_table()
@@ -38,11 +40,9 @@ app.add_middleware(
 
 @app.get('/')
 async def root():
-    return {
-        "status":200,
-        "msg":'成功',
-        'data':None
-    }
+    return success_response()
 
 app.include_router(news.router)
 app.include_router(user.router)
+app.include_router(favorite.router)
+app.include_router(history.router)
