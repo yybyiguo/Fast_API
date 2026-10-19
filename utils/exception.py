@@ -33,7 +33,7 @@ async def integrity_error_handler(request: Request, exc: IntegrityError):
 
     # 判断具体的约束错误类型
     if "username_UNIQUE" in error_msg or "Duplicate entry" in error_msg:
-        detail = "用户名已存在"
+        detail = "已存在"
     elif "FOREIGN KEY" in error_msg:
         detail = "关联数据不存在"
     else:

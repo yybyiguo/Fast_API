@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from models.favorite import Base
+from models.history import Base
 from routers import favorite, history, news,user
 from config.db_config import async_engine
 from utils.exception_handlers import register_exception_handlers

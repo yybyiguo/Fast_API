@@ -27,7 +27,8 @@ async def delete_favorite(db:AsyncSession,user_id:int,news_id:int):
     if record:
         await db.delete(record)
         await db.commit()
-    return True
+        return True
+    return False
 
 async def get_list(db:AsyncSession,user_id:int,offset:int,page_size:int):
     stmt = select(

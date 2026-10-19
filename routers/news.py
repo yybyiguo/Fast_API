@@ -1,8 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException,Query
 from curd import news
-from sqlalchemy.ext.asyncio import (
-    create_async_engine, async_sessionmaker, AsyncSession
-)
+from sqlalchemy.ext.asyncio import  AsyncSession
 from config.db_config import get_db
 
 router=APIRouter(prefix='/api/news',tags=['news'])
