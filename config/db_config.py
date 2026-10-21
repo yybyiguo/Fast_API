@@ -23,9 +23,11 @@ class Settings(BaseSettings):
     db_password: str
     db_name: str
 
-    # jwt配置示例
-    jwt_secret: str
-    jwt_expire_minutes: int = 30
+    redis_host:str
+    redis_port:int=6379
+    redis_db:int=0
+    redis_decode_responses:bool=True
+
 
     # 读取 .env 文件
     model_config = SettingsConfigDict(

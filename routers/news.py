@@ -26,7 +26,7 @@ async def get_news_list(
     hasmore=(offset+len(news_list))<totol
     return {
         "code":200,
-        "msg":'获取分类成功',
+        "msg":'获取news_list成功',
         'data':{
             'list':news_list,
             'totol':totol,
