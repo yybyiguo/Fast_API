@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException,Query
 from sqlalchemy.ext.asyncio import (
     create_async_engine, async_sessionmaker, AsyncSession
 )
+from utils.security import PasswordUpdateRequest
 from config.db_config import get_db
 from models.user import User
 from schemas.users import UserRequest, userAuthResponse, userInfoResponse, userUpdateRequest
@@ -41,18 +42,18 @@ async def update_user_info(
     User:User=Depends(auth.get_current_user),
     db:AsyncSession=Depends(get_db)
 ):
-    await user.update_user(db,User.username,user_data)
-    return success_response(message='修改成功',data=userInfoResponse.model_validate(User))
+    new_user=await user.update_user(db,User.username,user_data)
+    return success_response(message='修改成功',data=userInfoResponse.model_validate(new_user))
 
-@router.put('password')
+
+@router.put('/password')
 async def update_password(
-    new_password:str,
-    User:User=Depends(auth.get_current_user),
-    db:AsyncSession=Depends(get_db)
+    password: PasswordUpdateRequest,
+    User: User = Depends(auth.get_current_user),
+    db: AsyncSession = Depends(get_db),
 ):
-    result= await user.update_user_password(db,new_password,User)
+    result= await user.update_user_password(db,password.new_password,User)
     if not result:
-        raise HTTPException(status_code=404,detail='用户不存在')
-    return success_response(message='修改成功',data=userInfoResponse.model_validate(User))
-
-
+        raise HTTPException(status_code=400, detail="新密码不能与原密码相同")
+    await user.create_token(db,User.id)
+    return success_response(message="修改成功", data=userInfoResponse.model_validate(result))

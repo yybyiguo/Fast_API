@@ -17,8 +17,9 @@ async def is_favorite(db:AsyncSession,user_id:int,news_id:int):
 async def add_favorite(db:AsyncSession,user_id:int,news_id:int):
     favorite=Favorite(user_id=user_id,news_id=news_id)
     db.add(favorite)
-    await db.commit()
+    await db.flush()
     await db.refresh(favorite)
+    await db.commit()
     return favorite
 
 async def delete_favorite(db:AsyncSession,user_id:int,news_id:int):

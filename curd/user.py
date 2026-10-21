@@ -21,8 +21,9 @@ async def create_user(db:AsyncSession,user_data:UserRequest):
     hashed_password=get_password_hash(user_data.password)
     user=User(username=user_data.username,password=hashed_password)
     db.add(user)
-    await db.commit()
+    await db.flush()
     await db.refresh(user)
+    await db.commit()
     return user
 
 async def create_token(db:AsyncSession,user_id:int):
@@ -65,13 +66,13 @@ async def update_user(db:AsyncSession,user_name:str,user_data:userUpdateRequest)
 
     if result.rowcount==0:
         raise HTTPException(status_code=404,detail='用户不存在')
-    updated_user= get_user_by_username(db,user_name)
+    updated_user=await get_user_by_username(db,user_name)
     return updated_user
 
 
 async def update_user_password(db:AsyncSession,new_password:str,user:User):
     ispass = verify_password(new_password,user.password)
-    if not ispass :
+    if ispass :
         return None
     pw=get_password_hash(new_password)
     query= update(User).where(User.username==user.username).values(password=pw)

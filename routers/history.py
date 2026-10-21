@@ -14,7 +14,7 @@ from utils.response import success_response
 router=APIRouter(prefix='/api/history',tags=['history'])
 
 
-@router.post('add_history')
+@router.post('/add_history')
 async def add_history(
     news_id:int,
     db: AsyncSession = Depends(get_db),

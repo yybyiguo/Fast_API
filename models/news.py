@@ -3,13 +3,14 @@ from typing import Optional
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from datetime import datetime
 from sqlalchemy import ForeignKey, Text, func, DateTime, String, DECIMAL, select,delete,Integer,Index
+from models.base import Base,updatetimemixin,createtimemixin
 
-class Base(DeclarativeBase):
-    __abstract__ = True
-    create_time: Mapped[datetime] = mapped_column(DateTime, default=func.now())
-    update_time: Mapped[datetime] = mapped_column(DateTime, default=func.now(), onupdate=func.now())
 
-class Category(Base):
+class news_Base(Base, updatetimemixin, createtimemixin):
+     __abstract__ = True
+
+
+class Category(news_Base):
     __tablename__='news_categories'
     id: Mapped[int] = mapped_column(Integer,primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(50),unique=True,nullable=False,comment='分类名称')
@@ -17,7 +18,7 @@ class Category(Base):
     def __repr__(self):
         return f'<Category(id={self.id},name={self.name},sort_order={self.sort_order})>'
 
-class News(Base):
+class News(news_Base):
     __tablename__ = "news"
 
     # 创建索引：提升查询速度
@@ -38,4 +39,3 @@ class News(Base):
 
     def __repr__(self):
         return f"<News(id={self.id}, title='{self.title}', views={self.views})>"
-

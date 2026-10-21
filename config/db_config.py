@@ -1,5 +1,6 @@
 
 from contextlib import asynccontextmanager
+import traceback
 
 from fastapi import FastAPI, Depends, HTTPException,Request
 
@@ -59,8 +60,8 @@ async def get_db():
     async with AsyncSessionLocal() as session:
         try:
             yield session
-            await session.commit()
         except Exception:
+            traceback.print_exc()
             await session.rollback()
             raise
         finally:

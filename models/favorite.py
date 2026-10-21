@@ -1,4 +1,3 @@
-
 from datetime import datetime
 
 from sqlalchemy import DateTime, ForeignKey, Index, Integer, UniqueConstraint
@@ -6,16 +5,17 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 from models.news import News
 from models.user import User
+from models.base import Base, createtimemixin
+
+# class Base(DeclarativeBase):
+#     pass
 
 
-class Base(DeclarativeBase):
-    pass
-
-
-class Favorite(Base):
+class Favorite(Base, createtimemixin):
     """
     收藏表ORM模型
     """
+
     __tablename__ = 'favorite'
 
     # 创建索引
@@ -29,7 +29,7 @@ class Favorite(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, comment="收藏ID")
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey(User.id), nullable=False, comment="用户")
     news_id: Mapped[int] = mapped_column(Integer, ForeignKey(News.id), nullable=False, comment="新")
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    # created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, nullable=False)
 
     def __repr__(self):
         return f"<Favorite(id={self.id}, user_id={self.user_id}, news_id={self.news_id}, created_at={self.created_at})>"
