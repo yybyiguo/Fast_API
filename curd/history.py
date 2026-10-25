@@ -14,7 +14,6 @@ async def add_user_history(db:AsyncSession,news_id:int,user_id:int,update_time:d
         return False
     history = History(user_id=user_id,news_id=news_id,update_time=update_time)
     db.add(history)
-    await db.commit()
     return True
 
 
@@ -52,7 +51,6 @@ async def delete_history(db:AsyncSession,user_id:int,news_id:int):
     record= await db.scalar(stmt)
     if record:
         await db.delete(record)
-        await db.commit()
         return True
     return False
 
@@ -60,6 +58,5 @@ async def delete_history(db:AsyncSession,user_id:int,news_id:int):
 async def delete_all_history(db: AsyncSession, user_id: str):
     stmt = delete(History).where(History.user_id == user_id)
     result = await db.execute(stmt)
-    await db.commit()
 
     return result.rowcount or 0

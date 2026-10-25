@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from models.base import Base
 
 from routers import favorite, history, news,user
 from config.db_config import async_engine
@@ -10,18 +9,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from utils.response import success_response
 
 
-async def create_table():
-    async with async_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    print("✅ 数据库表创建成功！")
-
 # 装饰器快速创建异步上下文管理器
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await create_table()
+    # 建表交给 Alembic（alembic upgrade head），应用启动不再碰 DDL
     yield
     await async_engine.dispose()
-    print("✅ 数据库连接已关闭")
 
 app = FastAPI(lifespan=lifespan)
 

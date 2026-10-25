@@ -21,9 +21,9 @@ class Favorite(Base, createtimemixin):
     # 创建索引
     # UniqueConstraint: 唯一约束，当前用户，当前新闻，只能收藏一次
     __table_args__ = (
-        UniqueConstraint( 'user_id', 'news_id', name='user_news_unique'),
-        Index('fk_favorite_user_idx',  'user_id'),
-        Index('fk_favorite_news_idx', 'news_id'),
+        UniqueConstraint( 'user_id', 'news_id', name='uq_user_favorite'),
+        Index('idx_favorite_user_idx',  'user_id'),
+        Index('idx_favorite_news_idx', 'news_id'),
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, comment="收藏ID")

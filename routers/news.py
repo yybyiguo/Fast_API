@@ -40,7 +40,12 @@ async def get_news_detail(news_id:int=Query(...,alias='id'), db: AsyncSession = 
         views_result=await news.increase_news_views(db,news_id)
         if not views_result:
             raise HTTPException(status_code=404,detail='这不存在')
+        await db.commit()
+    except HTTPException:
+        raise
     except Exception as e:
+        # 事务已进入失败状态，必须回滚，否则同一个 session 后面的 SELECT 会报 PendingRollbackError
+        await db.rollback()
         print(f'添加浏览量错误：{e}')
     result= await news.get_news_detail(db,news_id)
     if not result:

@@ -21,7 +21,8 @@ async def http_exception_handler(request: Request, exc: HTTPException):
             "code": exc.status_code,
             "message": exc.detail,
             "data": None
-        }
+        },
+        headers=getattr(exc, "headers", None),
     )
 
 

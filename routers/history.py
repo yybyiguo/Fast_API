@@ -22,6 +22,7 @@ async def add_history(
 ):
     result = await add_user_history(db,news_id,user.id,datetime.now())
     if result :
+        await db.commit()
         return success_response(message='添加成功')
     else:
         return success_response(message="添加失败")
@@ -50,9 +51,11 @@ async def get_favorite_list(
 async def delete_one_history(news_id:int,db: AsyncSession = Depends(get_db),user: User = Depends(auth.get_current_user)):
     result = await history.delete_history(db,user.id,news_id)
     if result:
+        await db.commit()
         return success_response(message='删除成功',data=result)
 
 @router.delete('/clear')
 async def clear_history(user:User=Depends(auth.get_current_user),db: AsyncSession = Depends(get_db)):
     num = await history.delete_all_history(db, user.id)
+    await db.commit()
     return success_response(message="删除成功", data=f"删除{num}条数据")

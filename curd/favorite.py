@@ -19,7 +19,6 @@ async def add_favorite(db:AsyncSession,user_id:int,news_id:int):
     db.add(favorite)
     await db.flush()
     await db.refresh(favorite)
-    await db.commit()
     return favorite
 
 async def delete_favorite(db:AsyncSession,user_id:int,news_id:int):
@@ -27,7 +26,6 @@ async def delete_favorite(db:AsyncSession,user_id:int,news_id:int):
     record= await db.scalar(stmt)
     if record:
         await db.delete(record)
-        await db.commit()
         return True
     return False
 
@@ -50,6 +48,5 @@ async def get_count(db:AsyncSession,user_id:int):
 async def delete_all_favorite(db:AsyncSession,user_id:str):
     stmt=delete(Favorite).where(Favorite.user_id==user_id)
     result = await db.execute(stmt)
-    await db.commit()
 
     return result.rowcount or 0

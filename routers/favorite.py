@@ -27,6 +27,7 @@ async def shift_favorite(news_id:int,db: AsyncSession = Depends(get_db),user:Use
     if not ischecked:
         try:
             result= await favorite.add_favorite(db,user.id,news_id)
+            await db.commit()
         except IntegrityError:
             await db.rollback()
             return success_response(message='已收藏',data=None)
@@ -34,6 +35,7 @@ async def shift_favorite(news_id:int,db: AsyncSession = Depends(get_db),user:Use
     else:
         
         await favorite.delete_favorite(db,user.id,news_id)
+        await db.commit()
         return success_response(message='删除收藏成功',data=None)
 
 @router.get('/list')
@@ -56,4 +58,5 @@ async def get_favorite_list(
 @router.delete('/clear')
 async def clear_favorite(user:User=Depends(auth.get_current_user),db: AsyncSession = Depends(get_db)):
     num = await favorite.delete_all_favorite(db,user.id)
+    await db.commit()
     return success_response(message='删除成功',data=f'删除{num}条数据')

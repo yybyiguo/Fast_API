@@ -1,12 +1,9 @@
-from enum import Enum
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-class Gender(str, Enum):
-    male = "male"
-    female = "female"
-    unknown = "unknown"
+from models.enums import Gender
+
 
 class UserRequest(BaseModel):
     username:str
@@ -40,7 +37,19 @@ class userAuthResponse(BaseModel):
     )
 
 class userUpdateRequest(BaseModel):
-    nickname:str|None
-    avatar:str|None
-    gender:Gender|None
-    bio:str|None
+    nickname:str|None=None
+    avatar: str | None = None
+    gender: Gender | None=None
+    bio: str | None = None
+
+
+class PasswordUpdateRequest(BaseModel):
+    old_password: str = Field(..., min_length=3, description="旧密码")
+    new_password: str = Field(..., min_length=3, description="新密码")
+
+    @model_validator(mode="after")
+    def check_password_not_same(self):
+        if self.old_password == self.new_password:
+            raise ValueError("新密码不能和旧密码相同")
+        return self
+

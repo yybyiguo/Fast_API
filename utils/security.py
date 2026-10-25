@@ -1,5 +1,4 @@
 from passlib.context import CryptContext
-from pydantic import BaseModel
 
 # 创建密码加密上下文
 pwd_context = CryptContext(
@@ -13,8 +12,3 @@ def get_password_hash(password: str) -> str:
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password[:72], hashed_password)
-
-
-class PasswordUpdateRequest(BaseModel):
-    old_password: str
-    new_password: str

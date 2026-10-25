@@ -2,10 +2,15 @@ from fastapi import APIRouter, Depends, HTTPException,Query
 from sqlalchemy.ext.asyncio import (
     create_async_engine, async_sessionmaker, AsyncSession
 )
-from utils.security import PasswordUpdateRequest
 from config.db_config import get_db
 from models.user import User
-from schemas.users import UserRequest, userAuthResponse, userInfoResponse, userUpdateRequest
+from schemas.users import (
+    PasswordUpdateRequest,
+    UserRequest,
+    userAuthResponse,
+    userInfoResponse,
+    userUpdateRequest,
+)
 from curd import user
 from starlette import status
 
@@ -21,6 +26,7 @@ async def register(userData:UserRequest,db:AsyncSession=Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail='该用户已经存在')
     users= await user.create_user(db,userData)
     token= await user.create_token(db,users.id)
+    await db.commit()
     return success_response(message='注册成功',data=userAuthResponse(token=token,userInfo=userInfoResponse.model_validate(users)))
 
 @router.post('/login')
@@ -30,6 +36,7 @@ async def login(user_data:UserRequest,db:AsyncSession=Depends(get_db)):
         raise HTTPException(status_code=401,detail='用户或密码错误')
     token=await user.create_token(db,isuser.id)
     response_data=userAuthResponse(token=token,userInfo=userInfoResponse.model_validate(isuser))
+    await db.commit()
     return success_response(message='登录成功',data=response_data)
 
 @router.get('/info')
@@ -43,6 +50,7 @@ async def update_user_info(
     db:AsyncSession=Depends(get_db)
 ):
     new_user=await user.update_user(db,User.username,user_data)
+    await db.commit()
     return success_response(message='修改成功',data=userInfoResponse.model_validate(new_user))
 
 
@@ -52,8 +60,11 @@ async def update_password(
     User: User = Depends(auth.get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    result= await user.update_user_password(db,password.new_password,User)
+    result= await user.update_user_password(db,password,User)
     if not result:
-        raise HTTPException(status_code=400, detail="新密码不能与原密码相同")
-    await user.create_token(db,User.id)
-    return success_response(message="修改成功", data=userInfoResponse.model_validate(result))
+        raise HTTPException(status_code=400, detail="原密码错误")
+    new_token = await user.create_token(db,User.id)
+    await db.commit()
+    return success_response(
+        message="修改成功", data=userAuthResponse(token=new_token,user_info = userInfoResponse.model_validate(result))
+    )

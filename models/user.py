@@ -1,20 +1,16 @@
 from typing import Optional
 from datetime import datetime
 
-from sqlalchemy import Enum, ForeignKey, Text, func, DateTime, String, DECIMAL, select, delete, Integer, Index
+from sqlalchemy import DateTime, Enum, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from models.base import Base, createtimemixin, updatetimemixin
-from schemas.users import Gender
+from models.enums import Gender
 
 
 class User(Base, createtimemixin,updatetimemixin):
     __tablename__ = 'user'
 
-    __table_args__ = (
-        Index('username_UNIQUE', 'username'),
-        Index('phone_UNIQUE', 'phone'),
-    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False, autoincrement=True, comment="用户ID")
     username: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, comment="用户名")
@@ -24,8 +20,6 @@ class User(Base, createtimemixin,updatetimemixin):
     gender: Mapped[Optional[Gender]] = mapped_column(Enum(Gender), comment="性别", default=Gender.unknown)
     bio: Mapped[Optional[str]] = mapped_column(String(500), comment="个人简介", default='这个人很懒，什么都没说')
     phone: Mapped[Optional[str]] = mapped_column(String(20), unique=True, comment="手机号")
-    # created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(), comment="创建时间")
-    # updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(), onupdate=func.now(), comment="更新时间")
 
 
 class UserToken(Base):

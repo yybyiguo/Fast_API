@@ -2,9 +2,21 @@ from typing import Optional
 
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from datetime import datetime
-from sqlalchemy import ForeignKey, Text, func, DateTime, String, DECIMAL, select,delete,Integer,Index
 from models.base import Base,updatetimemixin,createtimemixin
-
+from sqlalchemy import (
+    Boolean,
+    ForeignKey,
+    Text,
+    func,
+    text,
+    DateTime,
+    String,
+    DECIMAL,
+    select,
+    delete,
+    Integer,
+    Index,
+)
 
 class news_Base(Base, updatetimemixin, createtimemixin):
      __abstract__ = True
@@ -28,13 +40,16 @@ class News(news_Base):
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, comment="新闻ID")
-    title: Mapped[str] = mapped_column(String(255), nullable=False, comment="新闻标题")
+    title: Mapped[str] = mapped_column(String(300), nullable=False, comment="新闻标题")
     description: Mapped[Optional[str]] = mapped_column(String(500), comment="新闻简介")
     content: Mapped[str] = mapped_column(Text, nullable=False, comment="新闻内容")
     image: Mapped[Optional[str]] = mapped_column(String(255), comment="封面图片URL")
     author: Mapped[Optional[str]] = mapped_column(String(50), comment="作者")
     category_id: Mapped[int] = mapped_column(Integer, ForeignKey('news_categories.id'), nullable=False,)
     views: Mapped[int] = mapped_column(Integer, default=0, nullable=False, comment="浏览量")
+    is_top: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default=text("0"), comment="是否置顶"
+    )
     publish_time: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, comment="发布时间")
 
     def __repr__(self):

@@ -8,8 +8,10 @@ class Base(DeclarativeBase):
 
 class updatetimemixin:
     update_time: Mapped[datetime] = mapped_column(
-        DateTime, default=func.now(), onupdate=func.now()
+        DateTime, onupdate=func.now(),server_default=func.now()
     )
 
 class createtimemixin:
-    create_time: Mapped[datetime] = mapped_column(DateTime, default=func.now())
+    create_time: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now()
+    )

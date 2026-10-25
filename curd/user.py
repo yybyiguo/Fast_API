@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy import func, select, update
 from models.user import User, UserToken
-from schemas.users import UserRequest, userUpdateRequest
+from schemas.users import PasswordUpdateRequest, UserRequest, userUpdateRequest
 from utils import security
 from utils.security import get_password_hash, verify_password
 import uuid
@@ -23,7 +23,6 @@ async def create_user(db:AsyncSession,user_data:UserRequest):
     db.add(user)
     await db.flush()
     await db.refresh(user)
-    await db.commit()
     return user
 
 async def create_token(db:AsyncSession,user_id:int):
@@ -38,7 +37,6 @@ async def create_token(db:AsyncSession,user_id:int):
     else:
         user_token=UserToken(id=user_id,token=token,expires_at=expires_at)
         db.add(user_token)
-    await db.commit()
     return token
 
 # 验证是否注册过
@@ -60,24 +58,25 @@ async def get_user_by_token(db:AsyncSession,token:str):
     return result2.scalar_one_or_none()
 
 async def update_user(db:AsyncSession,user_name:str,user_data:userUpdateRequest):
-    query= update(User).where(User.username==user_name).values(** user_data.model_dump(exclude_unset=True,exclude_none=True))
+    query= update(User).where(User.username==user_name).values(** user_data.model_dump(exclude_unset=True))
     result =await db.execute(query)
-    await db.commit()
-
     if result.rowcount==0:
         raise HTTPException(status_code=404,detail='用户不存在')
     updated_user=await get_user_by_username(db,user_name)
     return updated_user
 
 
-async def update_user_password(db:AsyncSession,new_password:str,user:User):
-    ispass = verify_password(new_password,user.password)
-    if ispass :
+async def update_user_password(
+    db: AsyncSession, password: PasswordUpdateRequest, user: User
+):
+
+    ispass = verify_password(password.old_password,user.password)
+    if not ispass :
         return None
-    pw=get_password_hash(new_password)
+    pw=get_password_hash(password.new_password)
     query= update(User).where(User.username==user.username).values(password=pw)
-    result =await db.execute(query)
-    await db.commit()
+    result = await db.execute(query)
+    await db.flush()
     if result.rowcount==0:
         raise HTTPException(status_code=404,detail='用户不存在')
     updated_user= await get_user_by_username(db,user.username)
