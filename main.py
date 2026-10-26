@@ -5,9 +5,18 @@ from routers import favorite, history, news,user
 from config.db_config import async_engine
 from utils.exception_handlers import register_exception_handlers
 from fastapi.middleware.cors import CORSMiddleware
-
+import logging
 from utils.response import success_response
+from utils.logging import setup_logging
+import time
+import uuid
 
+from fastapi import Request
+
+from utils.request_context import set_request_id, reset_request_id
+
+logger = logging.getLogger("api")
+setup_logging()
 
 # 装饰器快速创建异步上下文管理器
 @asynccontextmanager
@@ -18,7 +27,39 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+
 register_exception_handlers(app)
+@app.middleware("http")
+async def access_log(request: Request, call_next):
+    rid = request.headers.get("X-Request-ID") or uuid.uuid4().hex[:16]
+    token = set_request_id(rid)
+    # 同时写到 request 上：app 级的 500 兜底处理器跑在中间件外层，
+    # 那时 ContextVar 已经 reset，只能从这里取回编号
+    request.state.request_id = rid
+    start = time.perf_counter()
+    try:
+        response = await call_next(request)
+    except Exception:
+        elapsed = (time.perf_counter() - start) * 1000
+        # 只记"请求结果"，堆栈交给异常处理器，避免同一个错误打两遍堆栈
+        logger.warning(
+            "%s %s -> 500 in %.0fms", request.method, request.url.path, elapsed
+        )
+        raise
+    else:
+        elapsed = (time.perf_counter() - start) * 1000
+        response.headers["X-Request-ID"] = rid
+        logger.info(
+            "%s %s -> %s in %.0fms",
+            request.method,
+            request.url.path,
+            response.status_code,
+            elapsed,
+        )
+        return response
+    finally:
+        reset_request_id(token)
+
 
 app.add_middleware(
     CORSMiddleware,

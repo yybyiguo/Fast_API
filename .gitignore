@@ -13,3 +13,7 @@ venv/
 
 # vscode
 .vscode/
+
+#日志
+logs/
+*.log

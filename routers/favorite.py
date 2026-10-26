@@ -10,7 +10,6 @@ from schemas.favorite import FavoriteCheckResponse, FavoriteListResponse
 from utils import auth
 from utils.response import success_response
 
-
 router=APIRouter(prefix='/api/favorite',tags=['favorite'])
 
 
@@ -52,7 +51,6 @@ async def get_favorite_list(
 
     return success_response(message='暂无收藏' if not result else 'success',
         data=FavoriteListResponse(list=result,total=total,has_more=has_more))
-
 
 
 @router.delete('/clear')

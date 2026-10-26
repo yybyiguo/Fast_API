@@ -2,6 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException,Query
 from curd import news
 from sqlalchemy.ext.asyncio import  AsyncSession
 from config.db_config import get_db
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 router=APIRouter(prefix='/api/news',tags=['news'])
 
@@ -13,6 +17,7 @@ async def get_categories(db: AsyncSession = Depends(get_db),skip:int=0,limit:int
         "msg":'获取分类成功',
         'data':categories
         }
+
 
 @router.get('/list')
 async def get_news_list(
@@ -46,7 +51,7 @@ async def get_news_detail(news_id:int=Query(...,alias='id'), db: AsyncSession = 
     except Exception as e:
         # 事务已进入失败状态，必须回滚，否则同一个 session 后面的 SELECT 会报 PendingRollbackError
         await db.rollback()
-        print(f'添加浏览量错误：{e}')
+        logger.warning("增加浏览量失败", exc_info=True)
     result= await news.get_news_detail(db,news_id)
     if not result:
         raise HTTPException(status_code=404,detail='不存在')

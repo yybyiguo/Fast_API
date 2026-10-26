@@ -12,6 +12,7 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
+from typing import Literal
 
 from pathlib import Path
 
@@ -35,8 +36,18 @@ class Settings(BaseSettings):
     redis_db:int=0
     redis_decode_responses:bool=True
 
-    # 运行环境开关：dev 打开 SQL echo / 详细异常，prod 全部关掉
-    debug: bool = True
+    # 运行环境：dev 走本机、开 SQL echo 和详细报错；prod 全部关掉
+    # 字段名用 app_env 而不是 env：很多 CI/容器里已经有 ENV 环境变量，会撞车导致启动即失败
+    app_env: Literal["dev", "prod"] = "dev"
+
+    @property
+    def debug(self) -> bool:
+        """唯一事实来源：只有 prod 才关调试。
+
+        不把 debug 也做成字段，否则会出现 app_env=prod 但 debug=True 的矛盾状态，
+        而且没人说得清哪个说了算。
+        """
+        return self.app_env != "prod"
 
 
     # 读取 .env 文件

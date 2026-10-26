@@ -1,13 +1,25 @@
 import traceback
-
+import logging
 from fastapi import HTTPException, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from starlette import status
 
-# 开发模式：返回详细错误信息
-# 生产模式：返回简化错误信息
-DEBUG_MODE = True  # 教学项目保持开启
+from config.db_config import settings
+from utils.request_context import get_request_id
+
+logger = logging.getLogger(__name__)
+
+
+def _request_id(request: Request) -> str:
+    """取出这次请求的编号。
+
+    优先读中间件写在 request.state 上的值：app 级的 Exception 处理器
+    跑在 ServerErrorMiddleware 里，位于我们中间件的外层，执行到这里时
+    ContextVar 已经被 reset 回默认值了，只靠 get_request_id() 会拿到 "-"。
+    """
+    rid = getattr(request.state, "request_id", None)
+    return rid or get_request_id()
 
 
 async def http_exception_handler(request: Request, exc: HTTPException):
@@ -42,7 +54,7 @@ async def integrity_error_handler(request: Request, exc: IntegrityError):
 
     # 开发模式下返回详细错误信息
     error_data = None
-    if DEBUG_MODE:
+    if settings.debug:
         error_data = {
             "error_type": "IntegrityError",
             "error_detail": error_msg,
@@ -65,7 +77,7 @@ async def sqlalchemy_error_handler(request: Request, exc: SQLAlchemyError):
     """
     # 开发模式下返回详细错误信息
     error_data = None
-    if DEBUG_MODE:
+    if settings.debug:
         error_data = {
             "error_type": type(exc).__name__,
             "error_detail": str(exc),
@@ -78,7 +90,8 @@ async def sqlalchemy_error_handler(request: Request, exc: SQLAlchemyError):
         content={
             "code": 500,
             "message": "数据库操作失败，请稍后重试",
-            "data": error_data
+            "data": error_data,
+            "request_id": _request_id(request),
         }
     )
 
@@ -87,9 +100,15 @@ async def general_exception_handler(request: Request, exc: Exception):
     """
     处理所有未捕获的异常
     """
+    rid = _request_id(request)
+    logger.error(
+        "未处理异常 %s %s", request.method, request.url.path,
+        exc_info=exc,                 # 自动带上完整堆栈
+        extra={"request_id": rid},    # ContextVar 已失效，显式带上编号
+    )
     # 开发模式下返回详细错误信息
     error_data = None
-    if DEBUG_MODE:
+    if settings.debug:
         error_data = {
             "error_type": type(exc).__name__,
             "error_detail": str(exc),
@@ -103,6 +122,7 @@ async def general_exception_handler(request: Request, exc: Exception):
         content={
             "code": 500,
             "message": "服务器内部错误",
-            "data": error_data
+            "data": error_data,
+            "request_id": rid,
         }
     )
