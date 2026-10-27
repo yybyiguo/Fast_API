@@ -2,9 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException,Query
 from curd import news
 from sqlalchemy.ext.asyncio import  AsyncSession
 from config.db_config import get_db
-import logging
-
-logger = logging.getLogger(__name__)
+from cache import view_counter
 
 
 router=APIRouter(prefix='/api/news',tags=['news'])
@@ -41,20 +39,14 @@ async def get_news_list(
 
 @router.get('/detail')
 async def get_news_detail(news_id:int=Query(...,alias='id'), db: AsyncSession = Depends(get_db)):
-    try:
-        views_result=await news.increase_news_views(db,news_id)
-        if not views_result:
-            raise HTTPException(status_code=404,detail='这不存在')
-        await db.commit()
-    except HTTPException:
-        raise
-    except Exception as e:
-        # 事务已进入失败状态，必须回滚，否则同一个 session 后面的 SELECT 会报 PendingRollbackError
-        await db.rollback()
-        logger.warning("增加浏览量失败", exc_info=True)
     result= await news.get_news_detail(db,news_id)
     if not result:
         raise HTTPException(status_code=404,detail='不存在')
+
+    # 浏览量只写 Redis（微秒级），不再 UPDATE 数据库，避免热门新闻被行锁拖死。
+    # 数据库里的数字由后台任务定时批量回写。
+    await view_counter.increase(news_id)
+
     relatedNews=await news.get_related_news(db,news_id,result.category_id,10)
     return {
         "code":200,
@@ -67,7 +59,8 @@ async def get_news_detail(news_id:int=Query(...,alias='id'), db: AsyncSession = 
             'publishTime':result.publish_time,
             'categoryId':result.category_id,
             'content':result.content,
-            'views':result.views,
+            # 数据库里的值 + 还没落库的 Redis 增量，用户刷新能看到实时增长
+            'views':result.views + await view_counter.pending(news_id),
             'relatedNews':relatedNews
         }
         }

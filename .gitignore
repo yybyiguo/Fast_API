@@ -17,3 +17,7 @@ venv/
 #日志
 logs/
 *.log
+
+# redis 本地快照
+dump.rdb
+

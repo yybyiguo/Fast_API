@@ -1,0 +1,38 @@
+# 构建上下文排除清单：让 docker build 只发送真正需要的文件
+# 注意：.env 必须排除 —— 密钥绝不能烤进镜像
+
+# 虚拟环境（几百 MB，容器里会自己装）
+.venv/
+venv/
+
+# Python 缓存
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+
+# 日志与运行时产物
+logs/
+*.log
+dump.rdb
+image.png
+
+# 开发工具配置
+.git/
+.gitignore
+.idea/
+.vscode/
+
+# 测试与文档（生产镜像不需要）
+tests/
+*.md
+
+# 本机才用的东西
+.env
+.env.*
+!.env.example
+
+# Docker 自身文件（避免递归）
+Dockerfile*
+docker-compose*.yml
+.dockerignore
