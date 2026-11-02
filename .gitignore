@@ -21,3 +21,5 @@ logs/
 # redis 本地快照
 dump.rdb
 
+# Celery beat 运行时文件（会被进程持续写入，不能进 git）
+celerybeat-schedule*
