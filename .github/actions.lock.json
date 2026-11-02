@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "generated": "2026-11-02T13:08:48.830Z",
+  "actions": {
+    "actions/checkout": [
+      {
+        "version": "v4",
+        "sha": "11d5960a326750d5838078e36cf38b85af677262",
+        "integrity": "sha256-f514399c0896c9b494038e69cda25c0ee837583dc82a2dd9b9127af450c02db9",
+        "dependencies": []
+      }
+    ],
+    "astral-sh/setup-uv": [
+      {
+        "version": "v5",
+        "sha": "d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86",
+        "integrity": "sha256-4d5f04d08e43a8532fb64fb1768783970d36c93e6b01b13bcf52c7a77b74cfcb",
+        "dependencies": []
+      }
+    ]
+  }
+}
