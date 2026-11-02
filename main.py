@@ -1,22 +1,21 @@
-from fastapi import FastAPI
-from contextlib import asynccontextmanager
-
-from routers import favorite, history, news,user
-from config.db_config import async_engine
-from utils.exception_handlers import register_exception_handlers
-from fastapi.middleware.cors import CORSMiddleware
 import logging
-from utils.response import success_response
-from utils.logging import setup_logging
 import time
 import uuid
+from contextlib import asynccontextmanager
 
-from fastapi import Request
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 
-from utils.request_context import set_request_id, reset_request_id
+from config.db_config import async_engine
+from routers import favorite, history, news, rss, user
+from utils.exception_handlers import register_exception_handlers
+from utils.logging import setup_logging
+from utils.request_context import reset_request_id, set_request_id
+from utils.response import success_response
 
 logger = logging.getLogger("api")
 setup_logging()
+
 
 # 装饰器快速创建异步上下文管理器
 @asynccontextmanager
@@ -25,10 +24,13 @@ async def lifespan(app: FastAPI):
     yield
     await async_engine.dispose()
 
+
 app = FastAPI(lifespan=lifespan)
 
 
 register_exception_handlers(app)
+
+
 @app.middleware("http")
 async def access_log(request: Request, call_next):
     rid = request.headers.get("X-Request-ID") or uuid.uuid4().hex[:16]
@@ -42,9 +44,7 @@ async def access_log(request: Request, call_next):
     except Exception:
         elapsed = (time.perf_counter() - start) * 1000
         # 只记"请求结果"，堆栈交给异常处理器，避免同一个错误打两遍堆栈
-        logger.warning(
-            "%s %s -> 500 in %.0fms", request.method, request.url.path, elapsed
-        )
+        logger.warning("%s %s -> 500 in %.0fms", request.method, request.url.path, elapsed)
         raise
     else:
         elapsed = (time.perf_counter() - start) * 1000
@@ -67,17 +67,19 @@ app.add_middleware(
         "http://127.0.0.1:5500",
         "http://localhost:5500",
     ],
-    allow_credentials=False,       # 允许携带 cookie
-    allow_methods=["*"],          # 允许的请求方法
-    allow_headers=["*"],          # 允许的请求头
+    allow_credentials=False,  # 允许携带 cookie
+    allow_methods=["*"],  # 允许的请求方法
+    allow_headers=["*"],  # 允许的请求头
 )
 
 
-@app.get('/')
+@app.get("/")
 async def root():
     return success_response()
+
 
 app.include_router(news.router)
 app.include_router(user.router)
 app.include_router(favorite.router)
 app.include_router(history.router)
+app.include_router(rss.router)

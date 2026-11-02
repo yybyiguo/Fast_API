@@ -1,9 +1,7 @@
-from datetime import datetime
+from sqlalchemy import Index, Integer, UniqueConstraint
+from sqlalchemy.orm import Mapped, mapped_column
 
-from pydantic import Field
-from sqlalchemy import DateTime, Index, Integer, UniqueConstraint, func
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from models.base import Base,updatetimemixin
+from models.base import Base, updatetimemixin
 
 # class Base(DeclarativeBase):
 #     __abstract__ = True
@@ -13,7 +11,7 @@ from models.base import Base,updatetimemixin
 #     )
 
 
-class History(Base,updatetimemixin):
+class History(Base, updatetimemixin):
     __tablename__ = "history"
     __table_args__ = (
         UniqueConstraint("user_id", "news_id", name="uq_history_user_news"),

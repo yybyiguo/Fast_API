@@ -1,8 +1,6 @@
 import contextvars
 
-_request_id: contextvars.ContextVar[str] = contextvars.ContextVar(
-    "request_id", default="-"
-)
+_request_id: contextvars.ContextVar[str] = contextvars.ContextVar("request_id", default="-")
 
 
 def get_request_id() -> str:

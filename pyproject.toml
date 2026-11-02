@@ -9,7 +9,9 @@ dependencies = [
     "celery>=5.6.3",
     "cryptography>=50.0.2",
     "fastapi>=0.143.0",
+    "feedparser>=6.0.14",
     "greenlet>=3.5.6",
+    "httpx>=0.28.1",
     "passlib[bcrypt]>=1.7.4",
     "pydantic>=2.14.0",
     "pydantic-settings>=2.15.0",
@@ -21,11 +23,39 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "httpx>=0.28.1",
     "pytest>=9.1.1",
     "pytest-asyncio>=1.4.0",
 ]
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+# pytest-asyncio 1.x 要求显式声明 fixture 的事件循环作用域
+asyncio_default_fixture_loop_scope = "function"
 testpaths = ["tests"]
 pythonpath = ["."]
+addopts = "-ra"
+
+
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+
+[tool.ruff.lint]
+# 先从 flake8 等价的最安全集合开始
+select = ["E4", "E7", "E9", "F", "I", "UP", "B"]
+
+
+[tool.ruff.lint.per-file-ignores]
+"alembic/env.py" = ["F401"]
+"alembic/versions/*" = ["UP007", "UP035", "UP006"]
+
+[tool.ruff.lint.isort]
+known-first-party = [
+  "cache", "config", "curd", "models", "routers",
+  "schemas", "scripts", "services", "tasks", "utils",
+]
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = [
+  "fastapi.Depends", "fastapi.Query", "fastapi.Path", "fastapi.Body",
+  "fastapi.Header", "fastapi.Form", "fastapi.File", "fastapi.Security",
+]

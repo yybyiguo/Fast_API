@@ -28,7 +28,7 @@ celery_app = Celery(
     broker=BROKER_URL,
     backend=RESULT_URL,
     # 显式列出任务模块，worker 启动时才会注册这些任务
-    include=["tasks.view_tasks", "tasks.user_tasks"],
+    include=["tasks.view_tasks", "tasks.user_tasks", "tasks.rss_tasks"],
 )
 
 celery_app.conf.update(
@@ -53,6 +53,10 @@ celery_app.conf.update(
         "clean-expired-tokens": {
             "task": "tasks.user_tasks.clean_expired_tokens",
             "schedule": 3600.0,
+        },
+        "fetch-rss": {
+            "task": "tasks.rss_tasks.fetch_due_feeds",
+            "schedule": 300.0,  # 每 5 分钟扫一次，单源间隔由 fetch_interval 控制
         },
     },
 )

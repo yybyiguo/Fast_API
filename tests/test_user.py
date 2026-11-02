@@ -28,20 +28,24 @@ async def test_register_success(client, db):
 
     # 3) 数据库层：接口说成功了，库里真的有一行吗？
     row = (
-        await db.execute(
-            text("SELECT id, username, password FROM `user` WHERE username = :name"),
-            {"name": "alice"},
+        (
+            await db.execute(
+                text("SELECT id, username, password FROM `user` WHERE username = :name"),
+                {"name": "alice"},
+            )
         )
-    ).mappings().one()
+        .mappings()
+        .one()
+    )
     assert row["id"] == data["userInfo"]["id"]
     assert row["password"] != "secret123"  # 存的是哈希，不是明文
 
     # 返回的 token 也必须真的落库，而不是只在内存里拼出来的
     token_row = (
-        await db.execute(
-            text("SELECT token FROM user_token WHERE id = :id"), {"id": row["id"]}
-        )
-    ).mappings().one()
+        (await db.execute(text("SELECT token FROM user_token WHERE id = :id"), {"id": row["id"]}))
+        .mappings()
+        .one()
+    )
     assert token_row["token"] == data["token"]
 
 
@@ -121,35 +125,39 @@ async def test_update_nickname_only(client, auth, db):
     assert body["data"]["nickname"] == "新昵称"
 
     row = (
-        await db.execute(
-            text("SELECT nickname FROM `user` WHERE username = :name"),
-            {"name": "alice"},
+        (
+            await db.execute(
+                text("SELECT nickname FROM `user` WHERE username = :name"),
+                {"name": "alice"},
+            )
         )
-    ).mappings().one()
+        .mappings()
+        .one()
+    )
     assert row["nickname"] == "新昵称"
 
 
 async def test_update_can_clear_bio(client, auth, db):
     # 1) 先写一个简介进去
-    first = await client.put(
-        "/api/user/update", json={"bio": "我是简介"}, headers=auth["headers"]
-    )
+    first = await client.put("/api/user/update", json={"bio": "我是简介"}, headers=auth["headers"])
     assert first.status_code == 200, first.json()
     assert first.json()["data"]["bio"] == "我是简介"
 
     # 2) 再把它清空
-    second = await client.put(
-        "/api/user/update", json={"bio": None}, headers=auth["headers"]
-    )
+    second = await client.put("/api/user/update", json={"bio": None}, headers=auth["headers"])
     body = second.json()
 
     assert second.status_code == 200, body
     assert body["data"]["bio"] is None
 
     row = (
-        await db.execute(
-            text("SELECT bio FROM `user` WHERE username = :name"),
-            {"name": "alice"},
+        (
+            await db.execute(
+                text("SELECT bio FROM `user` WHERE username = :name"),
+                {"name": "alice"},
+            )
         )
-    ).mappings().one()
+        .mappings()
+        .one()
+    )
     assert row["bio"] is None

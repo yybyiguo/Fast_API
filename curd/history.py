@@ -7,13 +7,23 @@ from models.history import History
 from models.news import News
 
 
-async def add_user_history(db:AsyncSession,news_id:int,user_id:int,update_time:datetime):
-    stmt = select(News).where(News.id==news_id)
-    num = await db.execute(stmt)
-    if not num.scalar_one_or_none():
+async def add_user_history(db: AsyncSession, news_id: int, user_id: int, update_time: datetime):
+    stmt = select(News.id).where(News.id == news_id)
+    if not await db.scalar(stmt):
         return False
-    history = History(user_id=user_id,news_id=news_id,update_time=update_time)
-    db.add(history)
+
+    # 同一用户同一篇只保留一条：再次浏览时更新时间并置顶，
+    # 否则会撞 uq_history_user_news 唯一约束，前端只能静默失败
+    record = await db.scalar(
+        select(History).where(
+            History.user_id == user_id,
+            History.news_id == news_id,
+        )
+    )
+    if record:
+        record.update_time = update_time
+    else:
+        db.add(History(user_id=user_id, news_id=news_id, update_time=update_time))
     return True
 
 
@@ -46,9 +56,9 @@ async def get_count(db: AsyncSession, user_id: int):
     return await db.scalar(stmt)
 
 
-async def delete_history(db:AsyncSession,user_id:int,news_id:int):
+async def delete_history(db: AsyncSession, user_id: int, news_id: int):
     stmt = select(History).where(History.news_id == news_id, History.user_id == user_id)
-    record= await db.scalar(stmt)
+    record = await db.scalar(stmt)
     if record:
         await db.delete(record)
         return True
