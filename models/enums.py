@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import StrEnum
 
 
-class Gender(str, Enum):
+class Gender(StrEnum):
     male = "male"
     female = "female"
     unknown = "unknown"

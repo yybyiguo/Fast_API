@@ -44,9 +44,7 @@ async def test_favorite_list_and_toggle(client, auth, make_news):
     assert listing.json()["data"]["total"] == 0
 
 
-async def test_favorite_requires_login(client, make_news):
-    news = await make_news()
-
+async def test_favorite_requires_login(client):
     response = await client.get(
         "/api/favorite/list",
         headers={"Authorization": "Bearer not-a-real-token"},
