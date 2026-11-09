@@ -1,30 +1,59 @@
-# 环境变量文件
+# ============================================================
+# 根目录 .gitignore（整个项目）
+# 规则写在项目根，对 backend/、frontend/ 下的路径同样生效
+# ============================================================
+
+# ---------- 环境变量 / 本地配置 ----------
 .env
 .env.*
 !.env.example
+# docker compose 的本地配置，从 .env.example 复制，不要提交
+.env.docker
 
-# python
+# ---------- Python ----------
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
-venv/
+*.py[cod]
+*$py.class
 .venv/
-
-# vscode
-.vscode/
-
-#日志
-logs/
-*.log
-
-# redis 本地快照
-dump.rdb
-
-# Celery beat 运行时文件（会被进程持续写入，不能进 git）
-celerybeat-schedule*
-
-# 测试覆盖率产物
+venv/
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 .coverage
+.coverage.*
 coverage.xml
 htmlcov/
+
+# ---------- Node / 前端 ----------
+node_modules/
+dist-ssr/
+.vite/
+*.local
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ---------- 日志 / 运行时 ----------
+logs/
+*.log
+*.pid
+
+# ---------- Redis / Celery 运行时状态 ----------
+dump.rdb
+.tmp-redis/
+celerybeat-schedule*
+
+# ---------- 本机工具缓存 ----------
+.uv-cache/
+
+# ---------- IDE / 操作系统 ----------
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+Desktop.ini

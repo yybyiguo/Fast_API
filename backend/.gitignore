@@ -1,0 +1,30 @@
+# 环境变量文件
+.env
+.env.*
+!.env.example
+
+# python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+.venv/
+
+# vscode
+.vscode/
+
+#日志
+logs/
+*.log
+
+# redis 本地快照
+dump.rdb
+
+# Celery beat 运行时文件（会被进程持续写入，不能进 git）
+celerybeat-schedule*
+
+# 测试覆盖率产物
+.coverage
+coverage.xml
+htmlcov/

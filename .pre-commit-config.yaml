@@ -1,12 +1,13 @@
-exclude: ^(\.idea/|\.venv/|alembic/versions/|dump\.rdb|celerybeat-schedule)
+exclude: ^(backend/\.idea/|backend/\.venv/|backend/alembic/versions/|backend/logs/|backend/dump\.rdb|backend/celerybeat-schedule|frontend/node_modules/|frontend/dist/|dump\.rdb|\.tmp-redis/)
 
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.17.3
     hooks:
       - id: ruff-check
-        args: [--fix]
+        args: [--fix, --config, backend/pyproject.toml]
       - id: ruff-format
+        args: [--config, backend/pyproject.toml]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0

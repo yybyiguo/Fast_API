@@ -1,0 +1,20 @@
+{
+  "name": "toutiao-mobile-frontend",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "移动端资讯前端（Vue 3 + Vite），对接 backend/main.py",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0 --port 5500"
+  },
+  "dependencies": {
+    "vue": "^3.5.44",
+    "vue-router": "^4.6.4"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.0",
+    "vite": "^7.1.0"
+  }
+}

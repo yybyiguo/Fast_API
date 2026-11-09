@@ -17,6 +17,10 @@ jobs:
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    defaults:
+      run:
+        # 仓库根是项目根，后端代码和 pyproject.toml 都在 backend/
+        working-directory: backend
 
     services:
       mysql:
@@ -63,7 +67,7 @@ jobs:
         with:
           python-version: "3.13"
           enable-cache: true
-          cache-dependency-glob: "uv.lock"
+          cache-dependency-glob: "backend/uv.lock"
 
       - name: Sync dependencies
         run: uv sync --frozen

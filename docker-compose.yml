@@ -1,0 +1,136 @@
+name: toutiao
+
+x-backend: &backend
+  build:
+    context: ./backend
+  image: toutiao-backend:local
+  env_file:
+    - .env.docker
+  environment:
+    # 容器默认 UTC，会让 datetime.now() 和 MySQL 的 +08:00 差 8 小时
+    TZ: Asia/Shanghai
+  restart: unless-stopped
+
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: toutiao123
+      MYSQL_DATABASE: toutiao
+      TZ: Asia/Shanghai
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --default-time-zone=+08:00
+      # 慢查询日志落在数据目录，方便 docker compose exec 进去看
+      - --slow-query-log=1
+      - --long-query-time=0.5
+      - --slow-query-log-file=/var/lib/mysql/slow.log
+    ports:
+      - "3307:3306" # 避开本机 3306
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent" ]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 20s
+
+  redis:
+    image: redis:7-alpine
+    command: [ "redis-server", "--appendonly", "yes" ]
+    ports:
+      - "16380:6379" # 避开本机 16379
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  migrate:
+    <<: *backend
+    restart: "no"
+    command: [ "uv", "run", "--no-sync", "alembic", "upgrade", "head" ]
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  api:
+    <<: *backend
+    # 单 worker：/metrics 用的是进程内注册表，多 worker 会各算各的。
+    # 要扩 worker 就把指标改 multiprocess，或只保留 exporter 的指标。
+    command: [ "uv", "run", "--no-sync", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1" ]
+    ports:
+      - "8001:8000" # 避开本机 8000
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    healthcheck:
+      # 用 readyz：数据库挂了就别再让 Nginx 转发流量；Redis 挂了只标记 degraded
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/readyz', timeout=2)" ]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+      start_period: 20s
+
+  worker:
+    <<: *backend
+    command: [ "uv", "run", "--no-sync", "celery", "-A", "tasks.celery_app", "worker", "--loglevel=info", "--concurrency=2" ]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+
+  beat:
+    <<: *backend
+    command: [ "uv", "run", "--no-sync", "celery", "-A", "tasks.celery_app", "beat", "--loglevel=info", "--schedule=/tmp/celerybeat-schedule" ]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+
+  # 从 Celery 事件流算任务耗时/成功率，Prometheus 抓 9808
+  celery-exporter:
+    image: danihodovic/celery-exporter:latest
+    command: [ "--broker-url=redis://redis:6379/1" ]
+    ports:
+      - "9808:9808"
+    depends_on:
+      redis:
+        condition: service_healthy
+    profiles: [ "observability" ]
+
+  web:
+    build:
+      context: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v3.1.0
+    volumes:
+      - ./deploy/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    profiles: [ "observability" ]
+
+  rsshub:
+    image: diygod/rsshub
+    ports:
+      - "1200:1200"
+    profiles: [ "rss" ]
+
+volumes:
+  mysql_data:
+  redis_data:
