@@ -6,7 +6,8 @@ from pydantic import BaseModel, ConfigDict, Field
 class RssFeedIn(BaseModel):
     name: str = Field(..., max_length=100)
     url: str = Field(..., max_length=500)
-    category_id: int = Field(..., alias="categoryId")
+    # 不传就自动建一个同名分类，首页 tab 用这个名字
+    category_id: int | None = Field(None, alias="categoryId")
     fetch_interval: int = Field(900, ge=300, le=86400, alias="fetchInterval")
     enabled: bool = True
 

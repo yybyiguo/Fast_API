@@ -2,8 +2,14 @@
 # 阶段一：单阶段镜像（先跑通，下一课再优化成多阶段）
 # ============================================================
 
-# 基础镜像：一个装好 Python 3.13 的精简 Debian
-FROM python:3.13-slim
+# 基础镜像：Python 3.13 精简 Debian（走 daocloud 镜像站，docker.io 直连不通）
+FROM docker.m.daocloud.io/library/python:3.13-slim
+
+# slim 镜像没有时区数据库，TZ=Asia/Shanghai 不生效会静默回退 UTC，
+# 导致容器内 datetime.now() 和业务写入的 +08:00 差 8 小时
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends tzdata \
+ && rm -rf /var/lib/apt/lists/*
 
 # 运行环境变量：
 #   PYTHONDONTWRITEBYTECODE=1  不生成 .pyc，镜像更干净

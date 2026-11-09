@@ -45,6 +45,13 @@ celery_app.conf.update(
     task_ignore_result=True,
     # 启动时 Redis 还没准备好也不要立刻崩
     broker_connection_retry_on_startup=True,
+    # 任务可观测：celery-exporter 依赖这些事件计算耗时/成功率
+    worker_send_task_events=True,
+    task_send_sent_event=True,
+    task_track_started=True,
+    # 兜底超时，防止卡死的抓取任务一直占着 worker
+    task_soft_time_limit=240,
+    task_time_limit=300,
     beat_schedule={
         "flush-view-counts": {
             "task": "tasks.view_tasks.flush_view_counts",
@@ -57,6 +64,13 @@ celery_app.conf.update(
         "fetch-rss": {
             "task": "tasks.rss_tasks.fetch_due_feeds",
             "schedule": 300.0,  # 每 5 分钟扫一次，单源间隔由 fetch_interval 控制
+            # Celery 5.6.3 的 ScheduleEntry 不认顶层 expires（5.7 才支持），
+            # 放进 options 交给 apply_async 处理，语义不变
+            "options": {"expires": 240},
+        },
+        "clean-old-rss": {
+            "task": "tasks.rss_tasks.clean_old_rss_news",
+            "schedule": 86400.0,
         },
     },
 )

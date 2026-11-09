@@ -45,6 +45,14 @@ class IngestResult:
     status: str = "ok"
 
 
+@dataclass
+class FetchOutcome:
+    status: int
+    payload: bytes | None = None
+    etag: str | None = None
+    last_modified: str | None = None
+
+
 def html_to_text(raw: str | None) -> str:
     if not raw:
         return ""
@@ -142,39 +150,80 @@ def parse_entries(payload: bytes, feed: RssFeed, limit: int = MAX_ENTRIES) -> li
     return _normalize(_parse(payload, feed), feed, limit)
 
 
+async def fetch_payload(
+    client: httpx.AsyncClient,
+    feed: RssFeed,
+    force: bool = False,
+) -> FetchOutcome:
+    """发条件请求并流式读取，超过 MAX_BYTES 立即中断；304 时 payload 为 None。
+
+    force=True 用于“立即抓取”：不带 If-None-Match/If-Modified-Since，
+    避免用户手动点刷新却被 304 挡回来、什么都没发生。
+    """
+    headers = {
+        "User-Agent": USER_AGENT,
+        "Accept": "application/rss+xml, application/atom+xml, application/xml;q=0.9, */*;q=0.8",
+    }
+    if not force:
+        if feed.etag:
+            headers["If-None-Match"] = feed.etag
+        if feed.last_modified:
+            headers["If-Modified-Since"] = feed.last_modified
+
+    async with client.stream("GET", feed.url, headers=headers) as resp:
+        etag = resp.headers.get("etag")
+        last_modified = resp.headers.get("last-modified")
+        if resp.status_code == 304:
+            return FetchOutcome(304, etag=etag, last_modified=last_modified)
+
+        resp.raise_for_status()
+        length = resp.headers.get("content-length")
+        if length and length.isdigit() and int(length) > MAX_BYTES:
+            raise ValueError(f"feed 超过 {MAX_BYTES} 字节")
+
+        chunks: list[bytes] = []
+        total = 0
+        async for chunk in resp.aiter_bytes():
+            total += len(chunk)
+            if total > MAX_BYTES:
+                raise ValueError(f"feed 超过 {MAX_BYTES} 字节")
+            chunks.append(chunk)
+        return FetchOutcome(
+            200,
+            payload=b"".join(chunks),
+            etag=etag,
+            last_modified=last_modified,
+        )
+
+
 async def fetch_and_store(
     session: AsyncSession,
     feed: RssFeed,
     client: httpx.AsyncClient,
     limit: int = MAX_ENTRIES,
+    force: bool = False,
 ) -> IngestResult:
     """抓一次并写库。不 commit，由调用方统一提交。"""
-    headers = {
-        "User-Agent": USER_AGENT,
-        "Accept": "application/rss+xml, application/atom+xml, application/xml;q=0.9, */*;q=0.8",
-    }
-    if feed.etag:
-        headers["If-None-Match"] = feed.etag
-    if feed.last_modified:
-        headers["If-Modified-Since"] = feed.last_modified
-
     result = IngestResult()
     feed.last_fetch_at = datetime.now(CST).replace(tzinfo=None)
     try:
-        resp = await client.get(feed.url, headers=headers)
-        if resp.status_code == 304:
+        outcome = await fetch_payload(client, feed, force=force)
+        if outcome.status == 304:
             feed.last_status, feed.last_error, feed.error_count = (
                 "not_modified",
                 None,
                 0,
             )
+            if outcome.etag:
+                feed.etag = outcome.etag
+            if outcome.last_modified:
+                feed.last_modified = outcome.last_modified
             result.status = "not_modified"
             return result
-        resp.raise_for_status()
-        if len(resp.content) > MAX_BYTES:
-            raise ValueError(f"feed 超过 {MAX_BYTES} 字节")
+        if outcome.payload is None:
+            raise ValueError("响应没有内容")
 
-        parsed = _parse(resp.content, feed)
+        parsed = _parse(outcome.payload, feed)
         items = _normalize(parsed, feed, limit)
         result.fetched = len(items)
 
@@ -192,14 +241,17 @@ async def fetch_and_store(
             )
             fresh = [item for item in items if item["guid_hash"] not in existing]
             if fresh:
-                # INSERT IGNORE 兜住并发下的重复键；长度已在上游截断
-                await session.execute(insert(News).prefix_with("IGNORE"), fresh)
+                # 保存点隔离：即使插入报错（超长/外键），也只回滚这一步，
+                # 不影响后面把 error 状态写回 rss_feeds
+                async with session.begin_nested():
+                    # INSERT IGNORE 兜住并发下的重复键；长度已在上游截断
+                    await session.execute(insert(News).prefix_with("IGNORE"), fresh)
             result.inserted = len(fresh)
             result.skipped = len(items) - len(fresh)
 
         feed.last_status, feed.last_error, feed.error_count = "ok", None, 0
-        feed.etag = resp.headers.get("etag") or None
-        feed.last_modified = resp.headers.get("last-modified") or None
+        feed.etag = outcome.etag or None
+        feed.last_modified = outcome.last_modified or None
         if not feed.site_url:
             feed.site_url = parsed.feed.get("link") or None
         return result

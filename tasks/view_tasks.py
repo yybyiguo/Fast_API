@@ -69,8 +69,14 @@ async def _flush_once() -> int:
         logger.info("浏览量落库 news_ids=%s 共 %s 次", list(deltas), total)
         return total
     finally:
-        await client.aclose()
-        await engine.dispose()
+        try:
+            await client.aclose()
+        except Exception:
+            logger.exception("关闭 Redis 客户端失败")
+        try:
+            await engine.dispose()
+        except Exception:
+            logger.exception("释放 DB 引擎失败")
 
 
 @celery_app.task(name="tasks.view_tasks.flush_view_counts")

@@ -45,3 +45,18 @@ def setup_logging(level: int = logging.INFO) -> None:
         file.setFormatter(fmt)
         file.addFilter(RequestIdFilter())
         root.addHandler(file)
+
+    # uvicorn 在加载 app 之前就用自己的 LOGGING_CONFIG 配好了这三个 logger：
+    # 独立 handler + propagate=False，所以它们的日志不会走上面的格式。
+    # app 导入时（晚于 uvicorn 的 configure_logging）把 handler 摘掉、打开传播。
+    for name in ("uvicorn", "uvicorn.error"):
+        uvicorn_logger = logging.getLogger(name)
+        uvicorn_logger.handlers.clear()
+        uvicorn_logger.propagate = True
+
+    # 访问日志已经由 main.py 的 access_log 中间件统一输出（带 request_id 和耗时），
+    # 关掉 uvicorn 自带的 access log，否则一次请求会出现两条。
+    access_logger = logging.getLogger("uvicorn.access")
+    access_logger.handlers.clear()
+    access_logger.propagate = False
+    access_logger.disabled = True

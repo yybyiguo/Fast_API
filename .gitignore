@@ -23,3 +23,8 @@ dump.rdb
 
 # Celery beat 运行时文件（会被进程持续写入，不能进 git）
 celerybeat-schedule*
+
+# 测试覆盖率产物
+.coverage
+coverage.xml
+htmlcov/

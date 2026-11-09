@@ -3,7 +3,12 @@
 import pytest
 
 from models.rss import RssFeed
-from services.rss_fetcher import html_to_text, parse_entries, strip_read_more
+from services.rss_fetcher import (
+    assert_public_http_url,
+    html_to_text,
+    parse_entries,
+    strip_read_more,
+)
 
 ATOM = b"""<?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
@@ -65,3 +70,17 @@ def test_entry_hash_is_stable():
     first = parse_entries(ATOM, _feed())[0]["guid_hash"]
     second = parse_entries(ATOM, _feed())[0]["guid_hash"]
     assert first == second
+
+
+def test_private_host_rejected_by_default():
+    with pytest.raises(ValueError, match="内网"):
+        assert_public_http_url("http://127.0.0.1:1200/feed")
+
+
+def test_private_host_allowed_when_configured():
+    assert_public_http_url("http://127.0.0.1:1200/feed", allowed_hosts={"127.0.0.1"})
+
+
+def test_non_http_scheme_rejected():
+    with pytest.raises(ValueError, match="http"):
+        assert_public_http_url("ftp://example.com/feed")

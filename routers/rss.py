@@ -1,10 +1,12 @@
 import asyncio
+import logging
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from cache.news_cache import invalidate_categories, invalidate_news_list
 from config.db_config import get_db, settings
 from curd import rss
 from models.rss import RssFeed
@@ -13,6 +15,8 @@ from schemas.rss import RssFeedIn, RssFeedOut, RssFeedPatch
 from services.rss_fetcher import USER_AGENT, assert_public_http_url, parse_entries
 from utils.auth import require_rss_admin
 from utils.response import success_response
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/rss", tags=["rss"])
 
@@ -58,9 +62,24 @@ async def create_feed(
         await db.refresh(feed)
     except IntegrityError as exc:
         await db.rollback()
-        if "FOREIGN KEY" in str(exc.orig):
+        message = str(exc.orig)
+        if "FOREIGN KEY" in message:
             raise HTTPException(status_code=422, detail="分类不存在") from exc
+        if "news_categories" in message:
+            raise HTTPException(status_code=409, detail="源名称已被占用，换一个名字") from exc
         raise HTTPException(status_code=409, detail="该 Feed URL 已存在") from exc
+
+    # 新源自动建了同名分类，首页的 tab 缓存要立刻失效
+    await invalidate_categories()
+
+    # 建完顺手抓一次，用户不用再点“立即抓取”
+    try:
+        from tasks.rss_tasks import fetch_feed as fetch_feed_task
+
+        fetch_feed_task.delay(feed.id)
+    except Exception:
+        logger.warning("新源入队失败 feed_id=%s", feed.id)
+
     return success_response(message="创建成功", data=RssFeedOut.model_validate(feed))
 
 
@@ -74,13 +93,23 @@ async def update_feed(
     feed = await rss.get_feed(db, feed_id)
     if feed is None:
         raise HTTPException(status_code=404, detail="源不存在")
-    feed = await rss.update_feed(db, feed, data)
     try:
+        # update_feed 内部会 flush，外键错误在这里就会抛，不能等到 commit
+        feed = await rss.update_feed(db, feed, data)
         await db.commit()
         await db.refresh(feed)
     except IntegrityError as exc:
         await db.rollback()
+        message = str(exc.orig)
+        # 外键错误优先判：它的信息里也包含 news_categories
+        if "FOREIGN KEY" in message:
+            raise HTTPException(status_code=422, detail="分类不存在") from exc
+        if "news_categories" in message:
+            raise HTTPException(status_code=409, detail="源名称已被占用") from exc
         raise HTTPException(status_code=422, detail="分类不存在") from exc
+
+    # 改了名字的话，首页 tab 要跟着变
+    await invalidate_categories()
     return success_response(message="更新成功", data=RssFeedOut.model_validate(feed))
 
 
@@ -93,8 +122,15 @@ async def delete_feed(
     feed = await rss.get_feed(db, feed_id)
     if feed is None:
         raise HTTPException(status_code=404, detail="源不存在")
-    await db.delete(feed)
+
+    removed_category = await rss.delete_feed(db, feed)
     await db.commit()
+
+    await invalidate_categories()
+    if removed_category is not None:
+        # 这个分类已经没有文章也没别的源，顺手清掉它的空列表缓存
+        await invalidate_news_list(removed_category)
+
     return success_response(message="删除成功")
 
 

@@ -15,22 +15,27 @@ categories_key = "news:categories"
 news_list_key = "news:list:"
 
 
+def _new_client() -> Redis:
+    return Redis(
+        host=settings.redis_host,
+        port=settings.redis_port,
+        db=settings.redis_db,
+        decode_responses=True,
+        socket_connect_timeout=1,
+        socket_timeout=1,
+        retry=Retry(NoBackoff(), 0),
+    )
+
+
 async def invalidate_news_list(category_id: int, client: Redis | None = None) -> int:
-    """抓取后清掉该分类的列表缓存，否则首页最多 5 分钟看不到新内容。"""
+    """抓取新数据后清掉该分类的列表缓存旧数据，否则首页最多 5 分钟看不到新内容。"""
     own = client is None
     if own:
-        client = Redis(
-            host=settings.redis_host,
-            port=settings.redis_port,
-            db=settings.redis_db,
-            decode_responses=True,
-            socket_connect_timeout=1,
-            socket_timeout=1,
-            retry=Retry(NoBackoff(), 0),
-        )
+        client = _new_client()
     try:
         keys = [
             key
+            # scan_iter 把所有匹配的 key 全找出来，塞进 keys 列表，每次查200条
             async for key in client.scan_iter(match=f"{news_list_key}{category_id}:*", count=200)
         ]
         if keys:
@@ -38,6 +43,21 @@ async def invalidate_news_list(category_id: int, client: Redis | None = None) ->
         return len(keys)
     except Exception as exc:
         logger.warning("失效新闻列表缓存失败 category=%s: %s", category_id, exc)
+        return 0
+    finally:
+        if own:
+            await client.aclose()
+
+
+async def invalidate_categories(client: Redis | None = None) -> int:
+    """增删改源会同步分类，分类缓存必须立刻失效。"""
+    own = client is None
+    if own:
+        client = _new_client()
+    try:
+        return await client.delete(categories_key)
+    except Exception as exc:
+        logger.warning("失效分类缓存失败: %s", exc)
         return 0
     finally:
         if own:

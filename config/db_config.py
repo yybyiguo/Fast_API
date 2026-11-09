@@ -45,6 +45,8 @@ class Settings(BaseSettings):
     rss_admin_users: str = ""
     # 允许订阅的内网主机（本地 RSSHub 用），生产环境别放开
     rss_private_hosts: str = "127.0.0.1,localhost"
+    # RSS 文章保留天数；0 表示不自动清理
+    rss_retention_days: int = 0
 
     @property
     def rss_admins(self) -> set[str]:

@@ -63,7 +63,7 @@ BUSINESS_TABLES = (
 
 
 def _connect_server() -> pymysql.connections.Connection:
-    return pymysql.connect(
+    conn = pymysql.connect(
         host=settings.db_host,
         port=settings.db_port,
         user=settings.db_user,
@@ -71,6 +71,12 @@ def _connect_server() -> pymysql.connections.Connection:
         charset="utf8mb4",
         autocommit=True,
     )
+    # 测试库可能被 IDE / 数据库客户端开着事务。MySQL 的元数据锁默认几乎无限等，
+    # DROP/TRUNCATE 会挂几个小时；设短超时，让它快速报错，方便定位是谁占着库。
+    with conn.cursor() as cur:
+        cur.execute("SET SESSION lock_wait_timeout = 10")
+        cur.execute("SET SESSION innodb_lock_wait_timeout = 10")
+    return conn
 
 
 # 同一个测试库同一时刻只允许一个 pytest 进程使用。
@@ -202,9 +208,17 @@ async def db() -> AsyncIterator[AsyncSession]:
         yield session
 
 
+@pytest.fixture
+def session_factory():
+    """需要多个并发会话时用（例如验证 RSS 并发去重）。"""
+    return TestSessionLocal
+
+
 async def _truncate_all() -> None:
     """清空业务表；每次清之前都复核库名，防止误连真库。"""
     async with test_engine.begin() as conn:
+        await conn.execute(text("SET SESSION lock_wait_timeout = 10"))
+        await conn.execute(text("SET SESSION innodb_lock_wait_timeout = 10"))
         dbname = (await conn.execute(text("SELECT DATABASE()"))).scalar_one()
         if dbname != TEST_DB_NAME:
             raise RuntimeError(f"拒绝清理非测试库: {dbname}")

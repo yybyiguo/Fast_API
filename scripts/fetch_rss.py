@@ -1,9 +1,10 @@
 """手工抓取单个 RSS 源，不依赖 Celery。
 
 用法：
-    python -m scripts.fetch_rss https://sspai.com/feed --category 1 --dry-run
-    python -m scripts.fetch_rss https://sspai.com/feed --category 1 --name 少数派
+    python -m scripts.fetch_rss https://sspai.com/feed --dry-run
+    python -m scripts.fetch_rss https://sspai.com/feed --name 少数派
     python -m scripts.fetch_rss --feed-id 1
+    python -m scripts.fetch_rss --feed-id 1 --force
     python -m scripts.fetch_rss --list
 """
 
@@ -14,10 +15,13 @@ from urllib.parse import urlparse
 
 import httpx
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 
-from cache.news_cache import invalidate_news_list
+from cache.news_cache import invalidate_categories, invalidate_news_list
 from config.db_config import AsyncSessionLocal, async_engine
+from curd import rss as rss_curd
 from models.rss import RssFeed
+from schemas.rss import RssFeedIn
 from services.rss_fetcher import USER_AGENT, fetch_and_store, parse_entries
 
 
@@ -59,6 +63,7 @@ async def _run(args: argparse.Namespace) -> None:
 
         async with AsyncSessionLocal() as db:
             feed = None
+            created = False
             if args.feed_id:
                 feed = await db.get(RssFeed, args.feed_id)
             elif args.url:
@@ -66,26 +71,37 @@ async def _run(args: argparse.Namespace) -> None:
                     await db.execute(select(RssFeed).where(RssFeed.url == args.url))
                 ).scalar_one_or_none()
                 if feed is None:
-                    if args.category is None:
-                        sys.exit("首次添加源必须指定 --category")
                     host = urlparse(args.url).hostname or args.url[:100]
-                    feed = RssFeed(
+                    data = RssFeedIn(
                         name=args.name or host,
                         url=args.url,
                         category_id=args.category,
                         fetch_interval=args.interval,
-                        enabled=True,
                     )
-                    db.add(feed)
-                    await db.flush()
+                    try:
+                        # 和 Web 端同一条路径：自动建同名分类
+                        feed = await rss_curd.create_feed(db, data)
+                        await db.flush()
+                        created = True
+                    except IntegrityError as exc:
+                        await db.rollback()
+                        sys.exit(f"创建源失败: {exc.orig}")
             if feed is None:
                 sys.exit("源不存在：检查 --feed-id / url")
 
-            result = await fetch_and_store(db, feed, client, limit=args.limit)
+            result = await fetch_and_store(
+                db,
+                feed,
+                client,
+                limit=args.limit,
+                force=args.force or bool(args.feed_id),
+            )
             await db.commit()
 
             if result.inserted:
                 await invalidate_news_list(feed.category_id)
+            if created:
+                await invalidate_categories()
 
             print(
                 f"源 #{feed.id} {feed.name}: status={result.status} "
@@ -125,6 +141,7 @@ def main() -> None:
     parser.add_argument("--interval", type=int, default=900)
     parser.add_argument("--limit", type=int, default=50)
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--force", action="store_true", help="忽略 ETag，强制回源")
     parser.add_argument("--list", action="store_true")
     args = parser.parse_args()
 

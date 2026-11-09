@@ -16,8 +16,11 @@ dependencies = [
     "pydantic>=2.14.0",
     "pydantic-settings>=2.15.0",
     "pymysql>=1.2.3",
+    "prometheus-client>=0.21.0",
+    "prometheus-fastapi-instrumentator>=8.1.0",
     "redis>=8.1.0",
     "sqlalchemy>=2.1.4",
+    "tzdata>=2026.5",
     "uvicorn>=0.54.0",
 ]
 
@@ -25,6 +28,8 @@ dependencies = [
 dev = [
     "pytest>=9.1.1",
     "pytest-asyncio>=1.4.0",
+    "pytest-cov>=7.1.0",
+    "pytest-timeout>=2.4.0",
     "ruff~=0.17.0",
 ]
 [tool.pytest.ini_options]
@@ -33,12 +38,33 @@ asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 testpaths = ["tests"]
 pythonpath = ["."]
-addopts = "-ra"
+addopts = "-ra --strict-config --strict-markers"
+# 单个测试超过 60 秒直接失败，避免 CI 被锁/死循环拖住
+timeout = 60
+
+
+[tool.coverage.run]
+source = ["."]
+# 只统计业务代码：测试、迁移、CLI 脚本不参与覆盖率
+omit = [
+  "tests/*",
+  "alembic/*",
+  "scripts/*",
+  "conftest.py",
+  ".venv/*",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+fail_under = 75
 
 
 [tool.ruff]
 target-version = "py313"
 line-length = 100
+# 笔记里的代码块不参与格式化，避免每次提交都改 Markdown
+extend-exclude = ["*.md"]
 
 [tool.ruff.lint]
 # 先从 flake8 等价的最安全集合开始

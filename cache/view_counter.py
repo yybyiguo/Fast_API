@@ -27,7 +27,9 @@ async def increase(news_id: int) -> None:
     try:
         # 用 pipeline 把两条命令合成一次网络往返
         async with redis_client.pipeline(transaction=False) as pipe:
-            pipe.incr(_VIEW_KEY.format(news_id=news_id))
+            pipe.incr(
+                _VIEW_KEY.format(news_id=news_id)
+            )  # INCR 本身保证原子性。所以并发安全这块，INCR 已经解决了。
             pipe.sadd(_DIRTY_SET, news_id)
             await pipe.execute()
     except Exception:
