@@ -28,8 +28,10 @@ from collections.abc import AsyncIterator, Iterator  # noqa: E402
 
 import pymysql  # noqa: E402
 import pytest  # noqa: E402
+from alembic import command  # noqa: E402
 from alembic.config import Config  # noqa: E402
 from httpx import ASGITransport, AsyncClient  # noqa: E402
+from main import app  # noqa: E402
 from sqlalchemy import text  # noqa: E402
 from sqlalchemy.ext.asyncio import (  # noqa: E402
     AsyncSession,
@@ -38,9 +40,7 @@ from sqlalchemy.ext.asyncio import (  # noqa: E402
 )
 from sqlalchemy.pool import NullPool  # noqa: E402
 
-from alembic import command  # noqa: E402
 from config.db_config import DB_URL, get_db, settings  # noqa: E402
-from main import app  # noqa: E402
 from models.news import Category, News  # noqa: E402
 
 # config/db_config.py 里是 create_async_engine(echo=True)，不压日志，测试输出会被 SQL 淹没。

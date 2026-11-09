@@ -1,13 +1,13 @@
 from logging.config import fileConfig
 
+from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-import models.favorite
-import models.history
-import models.news
-import models.rss
-import models.user
-from alembic import context
+import models.favorite  # noqa: F401
+import models.history  # noqa: F401
+import models.news  # noqa: F401
+import models.rss  # noqa: F401
+import models.user  # noqa: F401
 from config.db_config import settings
 from models.base import Base
 
