@@ -129,7 +129,6 @@ services:
     image: diygod/rsshub
     ports:
       - "1200:1200"
-    profiles: [ "rss" ]
 
 volumes:
   mysql_data:

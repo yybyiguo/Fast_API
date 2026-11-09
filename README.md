@@ -86,17 +86,18 @@ cd ..
 ### Docker Compose（一键起全套）
 
 ```powershell
-# 构建镜像 + 跑迁移 + 起 mysql/redis/api/worker/beat/前端
+# 构建镜像 + 跑迁移 + 起 mysql/redis/api/worker/beat/前端/rsshub
 docker compose up -d --build
 
-# 需要指标和 RSSHub 时，再叠加 observability / rss profile
-docker compose --profile observability --profile rss up -d
+# 需要指标时，再叠加 observability profile
+docker compose --profile observability up -d
 ```
 
 | 入口 | 地址 |
 |---|---|
 | 前端 | <http://127.0.0.1:8080> |
 | API | <http://127.0.0.1:8001> |
+| RSSHub | <http://127.0.0.1:1200> |
 | Prometheus | <http://127.0.0.1:9090> |
 | celery-exporter | <http://127.0.0.1:9808/metrics> |
 | MySQL | `127.0.0.1:3307` |
