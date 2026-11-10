@@ -11,20 +11,19 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [vue()],
     server: {
-      // 默认 5500，正好落在后端 CORS 白名单里；被占用时自动顺延
-      host: '0.0.0.0', // 允许同一局域网内的手机直接访问
+      host: '0.0.0.0',
       port: 5500,
-      strictPort: false,
+      strictPort: true,
       proxy: {
-        '/api': {
-          target,
-          changeOrigin: true
-        }
+        '/api': { target, changeOrigin: true }
       }
     },
     preview: {
       host: '0.0.0.0',
-      port: 5500
+      port: 5500,
+      proxy: {
+        '/api': { target, changeOrigin: true }
+      }
     },
     build: {
       outDir: 'dist',

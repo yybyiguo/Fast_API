@@ -15,7 +15,7 @@ const meta = computed(() => {
   if (props.item.author) parts.push(props.item.author)
   parts.push(`${formatViews(props.item.views)} 阅读`)
   if (props.timeText) parts.push(props.timeText)
-  return parts.join(' · ')
+  return parts.join(' / ')
 })
 </script>
 
@@ -34,17 +34,17 @@ const meta = computed(() => {
       :aria-label="action === 'heart' ? '取消收藏' : '删除这条历史'"
       @click="$emit('remove', item)"
     >
-      <svg v-if="action === 'heart'" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+      <svg v-if="action === 'heart'" viewBox="0 0 24 24" width="17" height="17" aria-hidden="true">
         <path
           d="M12 20.2S4.6 15.6 4.6 10.4A4.35 4.35 0 0 1 12 7.1a4.35 4.35 0 0 1 7.4 3.3c0 5.2-7.4 9.8-7.4 9.8z"
           fill="currentColor"
           stroke="currentColor"
-          stroke-width="1.4"
+          stroke-width="1.2"
           stroke-linejoin="round"
         />
       </svg>
-      <svg v-else viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-        <path d="M7 7l10 10M17 7 7 17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      <svg v-else viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
+        <path d="M7 7l10 10M17 7 7 17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
       </svg>
     </button>
   </div>
@@ -54,18 +54,18 @@ const meta = computed(() => {
 .saved-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 14px 10px 14px 14px;
-  border-radius: var(--radius-lg);
-  background: var(--c-card);
-  box-shadow: var(--shadow-card);
+  gap: 10px;
+  padding: 18px 12px 18px 16px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  background: var(--canvas-card);
 }
 
 .content {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  gap: 6px;
+  gap: 7px;
   min-width: 0;
   text-align: left;
 }
@@ -73,10 +73,11 @@ const meta = computed(() => {
 .title {
   display: -webkit-box;
   overflow: hidden;
-  color: var(--c-ink);
+  color: var(--ink);
   font-size: 16px;
-  font-weight: 600;
-  line-height: 1.42;
+  font-weight: 400;
+  line-height: 1.45;
+  letter-spacing: -0.01em;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
@@ -84,34 +85,39 @@ const meta = computed(() => {
 .desc {
   display: -webkit-box;
   overflow: hidden;
-  color: #6f757e;
+  color: var(--mute);
   font-size: 12.5px;
-  line-height: 1.5;
+  line-height: 1.55;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 1;
 }
 
 .meta {
-  color: var(--c-muted);
-  font-size: 11.5px;
+  color: #666b73;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .action {
   display: grid;
   place-items: center;
   flex: 0 0 auto;
-  width: 40px;
-  height: 40px;
+  width: 34px;
+  height: 34px;
+  border: 1px solid transparent;
   border-radius: 50%;
-  color: #b9bfc8;
-  transition: background 0.15s ease, color 0.15s ease;
-}
-
-.action.liked {
-  color: var(--c-primary);
+  color: #6b7078;
+  transition: color 0.16s ease, border-color 0.16s ease, background 0.16s ease;
 }
 
 .action:active {
-  background: #f4f5f7;
+  border-color: var(--hairline);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.action.liked {
+  color: var(--ink);
 }
 </style>

@@ -25,10 +25,10 @@ const time = computed(() => {
       <span v-if="item.description" class="desc">{{ item.description }}</span>
       <span class="meta">
         <span v-if="item.author" class="author">{{ item.author }}</span>
-        <span v-if="item.author" class="dot">·</span>
+        <span v-if="item.author" class="dot">/</span>
         <span>{{ formatViews(item.views) }} 阅读</span>
         <template v-if="time">
-          <span class="dot">·</span>
+          <span class="dot">/</span>
           <span>{{ formatRelativeTime(time) }}</span>
         </template>
       </span>
@@ -44,47 +44,47 @@ const time = computed(() => {
 .news-card {
   display: flex;
   align-items: stretch;
-  gap: 12px;
+  gap: 14px;
   width: 100%;
-  padding: 14px;
-  border-radius: var(--radius-lg);
-  background: var(--c-card);
-  box-shadow: var(--shadow-card);
+  padding: 18px 16px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  background: var(--canvas-card);
   text-align: left;
-  transition: transform 0.16s ease, box-shadow 0.16s ease;
+  transition: border-color 0.16s ease, background 0.16s ease;
 }
 
 .news-card:active {
-  transform: scale(0.988);
+  border-color: #303338;
+  background: #1d1e21;
 }
 
 .body {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 6px;
+  gap: 7px;
   min-width: 0;
 }
 
 .title {
   display: -webkit-box;
   overflow: hidden;
-  color: var(--c-ink);
-  font-size: 16.5px;
-  font-weight: 600;
-  line-height: 1.42;
-  letter-spacing: 0.1px;
+  color: var(--ink);
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1.45;
+  letter-spacing: -0.012em;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
 }
 
 .desc {
   display: -webkit-box;
   overflow: hidden;
-  color: #6f757e;
-  font-size: 13px;
-  line-height: 1.5;
+  color: var(--mute);
+  font-size: 12.5px;
+  line-height: 1.6;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
@@ -93,24 +93,27 @@ const time = computed(() => {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  margin-top: 1px;
-  color: var(--c-muted);
-  font-size: 11.5px;
-  line-height: 1.4;
+  margin-top: 3px;
+  color: #666b73;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .author {
-  color: #7d838d;
+  color: #9ca1a8;
 }
 
 .thumb {
   flex: 0 0 auto;
   align-self: center;
-  width: 104px;
-  height: 78px;
+  width: 92px;
+  height: 70px;
   overflow: hidden;
-  border-radius: 10px;
-  background: #f1f2f5;
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+  background: var(--canvas-soft);
 }
 
 .thumb img {
@@ -118,5 +121,6 @@ const time = computed(() => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  opacity: 0.92;
 }
 </style>

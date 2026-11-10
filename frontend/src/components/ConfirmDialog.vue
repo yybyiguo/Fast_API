@@ -33,23 +33,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
     <Transition name="dialog">
       <div v-if="open" class="mask" @click.self="!busy && emit('cancel')">
         <div class="dialog" role="alertdialog" aria-modal="true" :aria-label="title">
-          <div class="icon" :class="{ danger }" aria-hidden="true">
-            <svg v-if="danger" viewBox="0 0 24 24" width="24" height="24">
-              <path
-                d="M4 7h16M9.5 7V5.4c0-.8.7-1.4 1.5-1.4h2c.8 0 1.5.6 1.5 1.4V7M6.4 7l.8 12.1c0 .9.8 1.6 1.7 1.6h6.2c.9 0 1.6-.7 1.7-1.6L18.4 7"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
-            <svg v-else viewBox="0 0 24 24" width="24" height="24">
-              <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8" />
-              <path d="M12 7.6v5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
-              <circle cx="12" cy="16.2" r="1.2" fill="currentColor" />
-            </svg>
-          </div>
+          <span class="eyebrow" :class="{ alert: danger }">
+            {{ danger ? 'CONFIRM DELETE' : 'CONFIRM' }}
+          </span>
 
           <h2>{{ title }}</h2>
           <p>{{ message }}</p>
@@ -58,13 +44,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
             <button type="button" class="btn ghost" :disabled="busy" @click="emit('cancel')">
               {{ cancelText }}
             </button>
-            <button
-              type="button"
-              class="btn solid"
-              :class="danger ? 'danger' : 'primary'"
-              :disabled="busy"
-              @click="emit('confirm')"
-            >
+            <button type="button" class="btn solid" :disabled="busy" @click="emit('confirm')">
               {{ busy ? '处理中…' : confirmText }}
             </button>
           </div>
@@ -83,46 +63,38 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: rgba(15, 17, 21, 0.46);
-  backdrop-filter: blur(2px);
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(4px);
 }
 
 .dialog {
-  width: min(100%, 320px);
-  padding: 24px 20px 18px;
-  border-radius: 22px;
-  background: #fff;
-  box-shadow: 0 24px 60px rgba(15, 17, 21, 0.28);
-  text-align: center;
+  width: min(100%, 330px);
+  padding: 22px 20px 18px;
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  background: #101113;
 }
 
-.icon {
-  display: grid;
-  place-items: center;
-  width: 52px;
-  height: 52px;
-  margin: 0 auto 14px;
-  border-radius: 50%;
-  color: var(--c-primary);
-  background: rgba(239, 59, 52, 0.1);
+.eyebrow {
+  margin-bottom: 14px;
 }
 
-.icon.danger {
-  color: var(--c-danger);
-  background: rgba(224, 51, 43, 0.1);
+.eyebrow.alert::before {
+  background: var(--ink);
 }
 
 h2 {
-  font-size: 17px;
-  font-weight: 600;
-  letter-spacing: 0.2px;
+  color: var(--ink);
+  font-size: 20px;
+  font-weight: 400;
+  letter-spacing: -0.02em;
 }
 
 p {
-  margin-top: 8px;
-  color: var(--c-ink-2);
-  font-size: 14px;
-  line-height: 1.6;
+  margin-top: 10px;
+  color: var(--mute);
+  font-size: 12.5px;
+  line-height: 1.7;
   word-break: break-word;
 }
 
@@ -130,36 +102,38 @@ p {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-  margin-top: 22px;
+  margin-top: 24px;
 }
 
 .btn {
-  height: 46px;
-  border-radius: 13px;
-  font-size: 15px;
-  font-weight: 600;
-  transition: transform 0.15s ease;
+  height: 44px;
+  border-radius: var(--pill);
+  font-size: 13px;
+  transition: background 0.16s ease, color 0.16s ease;
 }
 
 .btn:active:not(:disabled) {
-  transform: scale(0.97);
+  transform: none;
 }
 
 .ghost {
-  color: var(--c-ink-2);
-  background: #f1f2f5;
+  border: 1px solid var(--pill-border);
+  color: var(--ink);
+  background: transparent;
+}
+
+.ghost:active:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .solid {
-  color: #fff;
+  border: 1px solid var(--ink);
+  color: var(--canvas);
+  background: var(--ink);
 }
 
-.solid.danger {
-  background: var(--c-danger);
-}
-
-.solid.primary {
-  background: var(--c-primary);
+.solid:active:not(:disabled) {
+  background: var(--ink-dim);
 }
 
 .dialog-enter-active,
@@ -179,7 +153,7 @@ p {
 
 .dialog-enter-from .dialog,
 .dialog-leave-to .dialog {
-  transform: scale(0.94);
+  transform: translateY(6px) scale(0.98);
   opacity: 0;
 }
 </style>

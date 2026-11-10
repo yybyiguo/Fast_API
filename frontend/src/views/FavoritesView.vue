@@ -180,20 +180,26 @@ async function doClear() {
 
 <style scoped>
 .header-action {
-  padding: 8px 6px;
-  color: var(--c-primary);
-  font-size: 13.5px;
+  height: 30px;
+  padding: 0 14px;
+  border: 1px solid var(--pill-border);
+  border-radius: var(--pill);
+  color: var(--ink);
+  background: transparent;
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
 }
 
 .header-action:disabled {
-  color: #c3c8d0;
+  border-color: var(--hairline);
+  color: #4d5158;
 }
 
 .list {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 12px 12px 0;
+  padding: 14px 12px 0;
 }
 
 .sentinel {

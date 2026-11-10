@@ -85,6 +85,11 @@ defineExpose({ refresh })
     />
 
     <div v-else class="feed">
+      <div class="feed-head">
+        <span class="label">LATEST</span>
+        <span class="count">{{ total }} ITEMS</span>
+      </div>
+
       <NewsCard v-for="item in items" :key="item.id" :item="item" @open="open" />
 
       <ListFooter
@@ -102,11 +107,23 @@ defineExpose({ refresh })
 
 <style scoped>
 .feed-scroll {
-  background: var(--c-bg);
+  background: var(--canvas);
 }
 
 .feed {
-  padding: 12px 12px 0;
+  padding: 14px 12px 0;
+}
+
+.feed-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px 12px;
+  color: #5f646c;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 
 .feed :deep(.news-card + .news-card) {

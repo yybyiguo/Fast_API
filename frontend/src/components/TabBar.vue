@@ -24,35 +24,35 @@ function isActive(to) {
       class="tab"
       :class="{ active: isActive(item.to) }"
     >
-      <svg v-if="item.icon === 'home'" viewBox="0 0 24 24" width="23" height="23" aria-hidden="true">
+      <svg v-if="item.icon === 'home'" viewBox="0 0 24 24" width="21" height="21" aria-hidden="true">
         <path
           d="M4 10.8 12 4l8 6.8V20a1 1 0 0 1-1 1h-4.6v-6.2H9.6V21H5a1 1 0 0 1-1-1z"
           fill="none"
           stroke="currentColor"
-          stroke-width="1.7"
+          stroke-width="1.4"
           stroke-linejoin="round"
         />
       </svg>
-      <svg v-else-if="item.icon === 'heart'" viewBox="0 0 24 24" width="23" height="23" aria-hidden="true">
+      <svg v-else-if="item.icon === 'heart'" viewBox="0 0 24 24" width="21" height="21" aria-hidden="true">
         <path
           d="M12 20.2S4.6 15.6 4.6 10.4A4.35 4.35 0 0 1 12 7.1a4.35 4.35 0 0 1 7.4 3.3c0 5.2-7.4 9.8-7.4 9.8z"
           fill="none"
           stroke="currentColor"
-          stroke-width="1.7"
+          stroke-width="1.4"
           stroke-linejoin="round"
         />
       </svg>
-      <svg v-else-if="item.icon === 'clock'" viewBox="0 0 24 24" width="23" height="23" aria-hidden="true">
-        <circle cx="12" cy="12" r="8.4" fill="none" stroke="currentColor" stroke-width="1.7" />
-        <path d="M12 7.3V12l3.1 1.9" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+      <svg v-else-if="item.icon === 'clock'" viewBox="0 0 24 24" width="21" height="21" aria-hidden="true">
+        <circle cx="12" cy="12" r="8.4" fill="none" stroke="currentColor" stroke-width="1.4" />
+        <path d="M12 7.3V12l3.1 1.9" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
       </svg>
-      <svg v-else viewBox="0 0 24 24" width="23" height="23" aria-hidden="true">
-        <circle cx="12" cy="8.2" r="3.6" fill="none" stroke="currentColor" stroke-width="1.7" />
+      <svg v-else viewBox="0 0 24 24" width="21" height="21" aria-hidden="true">
+        <circle cx="12" cy="8.2" r="3.6" fill="none" stroke="currentColor" stroke-width="1.4" />
         <path
           d="M4.8 20c.5-3.5 3.4-5.5 7.2-5.5s6.7 2 7.2 5.5"
           fill="none"
           stroke="currentColor"
-          stroke-width="1.7"
+          stroke-width="1.4"
           stroke-linecap="round"
         />
       </svg>
@@ -67,9 +67,9 @@ function isActive(to) {
   flex: 0 0 auto;
   align-items: stretch;
   padding-bottom: var(--safe-bottom);
-  border-top: 1px solid var(--c-line);
-  background: rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--hairline);
+  background: rgba(10, 10, 10, 0.96);
+  backdrop-filter: blur(14px);
 }
 
 .tab {
@@ -78,21 +78,20 @@ function isActive(to) {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 4px;
   height: var(--tabbar-h);
-  color: #9198a2;
-  font-size: 10.5px;
-  letter-spacing: 0.2px;
+  color: #6b7078;
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
   text-decoration: none;
   transition: color 0.16s ease;
 }
 
 .tab.active {
-  color: var(--c-primary);
-  font-weight: 600;
+  color: var(--ink);
 }
 
 .tab:active {
-  opacity: 0.75;
+  color: var(--ink);
 }
 </style>

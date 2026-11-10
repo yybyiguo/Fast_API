@@ -9,22 +9,8 @@ const { toast } = useToast()
     <div class="toast-layer" aria-live="polite" aria-atomic="true">
       <Transition name="toast">
         <div v-if="toast" class="toast" :class="toast.type">
-          <svg v-if="toast.type === 'success'" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-            <path
-              d="M20 6 9 17l-5-5"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.4"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-          <svg v-else-if="toast.type === 'error'" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-            <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2" />
-            <path d="M12 7.5v5.2" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
-            <circle cx="12" cy="16.2" r="1.2" fill="currentColor" />
-          </svg>
-          <span>{{ toast.text }}</span>
+          <span class="label">{{ toast.type === 'error' ? 'ERR' : toast.type === 'success' ? 'OK' : 'INFO' }}</span>
+          <span class="text">{{ toast.text }}</span>
         </div>
       </Transition>
     </div>
@@ -34,7 +20,7 @@ const { toast } = useToast()
 <style scoped>
 .toast-layer {
   position: fixed;
-  top: calc(var(--safe-top) + 12px);
+  top: calc(var(--safe-top) + 14px);
   right: 0;
   left: 0;
   z-index: 90;
@@ -47,26 +33,36 @@ const { toast } = useToast()
 .toast {
   display: flex;
   align-items: center;
-  gap: 8px;
-  max-width: min(100%, 420px);
-  padding: 9px 15px;
-  border-radius: 999px;
-  color: #fff;
-  background: rgba(24, 26, 30, 0.93);
-  box-shadow: 0 8px 24px rgba(20, 22, 26, 0.24);
-  font-size: 13.5px;
-  line-height: 1.4;
-  backdrop-filter: blur(8px);
+  gap: 10px;
+  max-width: min(100%, 440px);
+  padding: 11px 14px;
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+  color: var(--ink);
+  background: rgba(16, 17, 19, 0.96);
+  font-size: 12.5px;
+  line-height: 1.45;
+  backdrop-filter: blur(12px);
 }
 
-.toast.success svg {
+.label {
   flex: 0 0 auto;
-  color: #4ade80;
+  color: var(--mute);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
 }
 
-.toast.error svg {
-  flex: 0 0 auto;
-  color: #fca5a5;
+.toast.error .label {
+  color: var(--accent-soft);
+}
+
+.toast.success .label {
+  color: var(--ink);
+}
+
+.text {
+  color: var(--ink-dim);
 }
 
 .toast-enter-active,
@@ -77,6 +73,6 @@ const { toast } = useToast()
 .toast-enter-from,
 .toast-leave-to {
   opacity: 0;
-  transform: translateY(-10px) scale(0.96);
+  transform: translateY(-8px);
 }
 </style>

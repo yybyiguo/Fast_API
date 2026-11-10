@@ -27,23 +27,24 @@ defineProps({
 
 .row {
   display: flex;
-  gap: 12px;
-  padding: 14px;
-  border-radius: var(--radius-lg);
-  background: #fff;
+  gap: 14px;
+  padding: 18px 16px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  background: var(--canvas-card);
 }
 
 .lines {
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 9px;
+  gap: 10px;
   padding-top: 2px;
 }
 
 .line {
-  height: 11px;
-  border-radius: 6px;
+  height: 10px;
+  border-radius: 3px;
 }
 
 .title {
@@ -57,20 +58,20 @@ defineProps({
 
 .meta {
   width: 42%;
-  height: 9px;
+  height: 8px;
 }
 
 .thumb {
   flex: 0 0 auto;
-  width: 104px;
-  height: 78px;
-  border-radius: 10px;
+  width: 92px;
+  height: 70px;
+  border-radius: 6px;
 }
 
 .shimmer {
-  background: linear-gradient(100deg, #eef0f3 20%, #f7f8fa 40%, #eef0f3 60%);
+  background: linear-gradient(100deg, #16171a 20%, #202226 40%, #16171a 60%);
   background-size: 220% 100%;
-  animation: shimmer 1.3s linear infinite;
+  animation: shimmer 1.4s linear infinite;
 }
 
 @keyframes shimmer {

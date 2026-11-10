@@ -123,15 +123,14 @@ function doLogout() {
 <template>
   <div class="page">
     <header class="profile-hero">
-      <div class="glow" aria-hidden="true"></div>
-
       <div class="hero-top">
-        <h1>我的</h1>
+        <span class="eyebrow">ACCOUNT</span>
+        <button v-if="user" type="button" class="edit-btn" @click="openEdit">编辑</button>
       </div>
 
       <div v-if="!user" class="guest">
         <div class="avatar guest-avatar" aria-hidden="true">?</div>
-        <h2>登录后更精彩</h2>
+        <h2>未登录</h2>
         <p>收藏喜欢的资讯，自动同步浏览历史</p>
         <button type="button" class="login-btn" @click="goLogin">登录 / 注册</button>
       </div>
@@ -146,7 +145,6 @@ function doLogout() {
           <p class="username">@{{ user.username }}</p>
           <p class="bio">{{ user.bio || '这个人很懒，什么都没说' }}</p>
         </div>
-        <button type="button" class="edit-btn" @click="openEdit">编辑</button>
       </div>
     </header>
 
@@ -154,83 +152,38 @@ function doLogout() {
       <div v-if="user" class="stats">
         <button type="button" class="stat" @click="router.push('/favorites')">
           <b>{{ stats.loaded ? stats.favorites : '–' }}</b>
-          <span>收藏</span>
+          <span>SAVED</span>
         </button>
         <i class="divider" aria-hidden="true"></i>
         <button type="button" class="stat" @click="router.push('/history')">
           <b>{{ stats.loaded ? stats.history : '–' }}</b>
-          <span>浏览历史</span>
+          <span>HISTORY</span>
         </button>
       </div>
 
       <div class="menu">
         <button type="button" class="menu-item" @click="router.push('/favorites')">
-          <span class="menu-icon heart" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="19" height="19">
-              <path
-                d="M12 20.2S4.6 15.6 4.6 10.4A4.35 4.35 0 0 1 12 7.1a4.35 4.35 0 0 1 7.4 3.3c0 5.2-7.4 9.8-7.4 9.8z"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.7"
-                stroke-linejoin="round"
-              />
-            </svg>
-          </span>
+          <span class="index" aria-hidden="true">01</span>
           <span class="menu-label">我的收藏</span>
-          <svg class="chevron" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-            <path d="m9.5 5 7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
+          <span class="chevron" aria-hidden="true">→</span>
         </button>
 
         <button type="button" class="menu-item" @click="router.push('/history')">
-          <span class="menu-icon clock" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="19" height="19">
-              <circle cx="12" cy="12" r="8.4" fill="none" stroke="currentColor" stroke-width="1.7" />
-              <path d="M12 7.3V12l3.1 1.9" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
-            </svg>
-          </span>
+          <span class="index" aria-hidden="true">02</span>
           <span class="menu-label">浏览历史</span>
-          <svg class="chevron" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-            <path d="m9.5 5 7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
+          <span class="chevron" aria-hidden="true">→</span>
         </button>
 
         <button type="button" class="menu-item" @click="router.push('/rss')">
-          <span class="menu-icon rss" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="19" height="19">
-              <path
-                d="M6 6.5a11.5 11.5 0 0 1 11.5 11.5M6 11.6a6.4 6.4 0 0 1 6.4 6.4"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.7"
-                stroke-linecap="round"
-              />
-              <circle cx="7.1" cy="17.4" r="1.5" fill="currentColor" />
-            </svg>
-          </span>
+          <span class="index" aria-hidden="true">03</span>
           <span class="menu-label">订阅源</span>
-          <svg class="chevron" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-            <path d="m9.5 5 7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
+          <span class="chevron" aria-hidden="true">→</span>
         </button>
 
         <button v-if="user" type="button" class="menu-item" @click="openEdit">
-          <span class="menu-icon edit" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="19" height="19">
-              <path
-                d="m14.6 5.4 4 4M4.8 19.2l1-4.2L15.6 5.2a1.6 1.6 0 0 1 2.3 0l.9.9a1.6 1.6 0 0 1 0 2.3L9 18.2z"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.7"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
-          </span>
+          <span class="index" aria-hidden="true">04</span>
           <span class="menu-label">编辑资料</span>
-          <svg class="chevron" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-            <path d="m9.5 5 7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
+          <span class="chevron" aria-hidden="true">→</span>
         </button>
       </div>
 
@@ -239,8 +192,8 @@ function doLogout() {
       </button>
 
       <div class="about">
-        <p>今日资讯 · 移动端演示</p>
-        <p>Vue 3 + Vite · FastAPI</p>
+        <p>TOUTIAO · MOBILE</p>
+        <p>VUE 3 / FASTAPI</p>
       </div>
     </div>
 
@@ -261,28 +214,31 @@ function doLogout() {
             <div class="grabber" aria-hidden="true"></div>
 
             <div class="sheet-head">
-              <h3>编辑资料</h3>
+              <div>
+                <span class="eyebrow no-dot">EDIT PROFILE</span>
+                <h3>编辑资料</h3>
+              </div>
               <button type="button" class="close" aria-label="关闭" :disabled="saving" @click="editOpen = false">
-                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-                  <path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                  <path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
                 </svg>
               </button>
             </div>
 
             <label class="field">
-              <span>昵称</span>
+              <span class="label">NICKNAME</span>
               <input v-model="form.nickname" type="text" maxlength="50" placeholder="给自己起个昵称" />
               <em>{{ form.nickname.length }}/50</em>
             </label>
 
             <label class="field">
-              <span>个人简介</span>
+              <span class="label">BIO</span>
               <textarea v-model="form.bio" rows="3" maxlength="500" placeholder="介绍一下自己"></textarea>
               <em>{{ form.bio.length }}/500</em>
             </label>
 
             <div class="field">
-              <span>性别</span>
+              <span class="label">GENDER</span>
               <div class="segmented">
                 <button
                   v-for="option in genders"
@@ -308,60 +264,38 @@ function doLogout() {
 
 <style scoped>
 .profile-hero {
-  position: relative;
   flex: 0 0 auto;
-  padding: calc(12px + var(--safe-top)) 18px 20px;
-  overflow: hidden;
-  color: #fff;
-  background: linear-gradient(145deg, #ff6b57 0%, #ef3b34 55%, #dc2b25 100%);
-}
-
-.glow {
-  position: absolute;
-  top: -150px;
-  right: -90px;
-  width: 280px;
-  height: 280px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 232, 214, 0.5), transparent 66%);
-  pointer-events: none;
+  padding: calc(16px + var(--safe-top)) 20px 24px;
+  border-bottom: 1px solid var(--hairline);
+  background: var(--canvas);
 }
 
 .hero-top {
-  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
-.hero-top h1 {
-  font-size: 18px;
-  font-weight: 600;
-  letter-spacing: 0.4px;
+.edit-btn {
+  height: 30px;
+  padding: 0 14px;
+  border: 1px solid var(--pill-border);
+  border-radius: var(--pill);
+  color: var(--ink);
+  background: transparent;
+  font-size: 11.5px;
 }
 
 .guest,
 .me {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-top: 18px;
+  margin-top: 26px;
 }
 
 .guest {
+  display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0;
-}
-
-.guest h2 {
-  margin-top: 14px;
-  font-size: 21px;
-  font-weight: 700;
-}
-
-.guest p {
-  margin-top: 6px;
-  color: rgba(255, 255, 255, 0.82);
-  font-size: 12.5px;
 }
 
 .avatar {
@@ -371,12 +305,12 @@ function doLogout() {
   width: 64px;
   height: 64px;
   overflow: hidden;
-  border: 2px solid rgba(255, 255, 255, 0.55);
+  border: 1px solid var(--pill-border);
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.22);
-  font-size: 24px;
-  font-weight: 700;
-  backdrop-filter: blur(4px);
+  color: var(--ink);
+  background: #131416;
+  font-size: 22px;
+  font-weight: 400;
 }
 
 .avatar img {
@@ -388,24 +322,40 @@ function doLogout() {
 .guest-avatar {
   width: 56px;
   height: 56px;
-  font-size: 22px;
-  opacity: 0.85;
+  color: var(--mute);
+  font-family: var(--font-mono);
+  font-size: 18px;
+}
+
+.guest h2 {
+  margin-top: 22px;
+  color: var(--ink);
+  font-size: clamp(30px, 9vw, 38px);
+  font-weight: 400;
+  line-height: 1.04;
+  letter-spacing: -0.045em;
+}
+
+.guest p {
+  margin-top: 10px;
+  color: var(--mute);
+  font-size: 12.5px;
 }
 
 .login-btn {
   height: 40px;
-  margin-top: 18px;
+  margin-top: 22px;
   padding: 0 22px;
-  border-radius: 999px;
-  color: #e5352c;
-  background: #fff;
-  box-shadow: 0 8px 20px rgba(120, 12, 8, 0.18);
-  font-size: 14px;
-  font-weight: 600;
+  border-radius: var(--pill);
+  color: var(--canvas);
+  background: var(--ink);
+  font-size: 13px;
 }
 
 .me {
+  display: flex;
   align-items: flex-start;
+  gap: 14px;
 }
 
 .me-info {
@@ -416,164 +366,137 @@ function doLogout() {
 
 .me-info h2 {
   overflow: hidden;
-  font-size: 20px;
-  font-weight: 700;
+  color: var(--ink);
+  font-size: clamp(26px, 8vw, 34px);
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: -0.04em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .username {
-  margin-top: 3px;
-  color: rgba(255, 255, 255, 0.76);
-  font-size: 12px;
+  margin-top: 7px;
+  color: var(--mute);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
 }
 
 .bio {
   display: -webkit-box;
   overflow: hidden;
-  margin-top: 6px;
-  color: rgba(255, 255, 255, 0.9);
+  margin-top: 10px;
+  color: #9ca1a8;
   font-size: 12.5px;
-  line-height: 1.5;
+  line-height: 1.6;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
 
-.edit-btn {
-  flex: 0 0 auto;
-  height: 30px;
-  padding: 0 13px;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  border-radius: 999px;
-  color: #fff;
-  background: rgba(255, 255, 255, 0.16);
-  font-size: 12.5px;
-}
-
 .scroll {
-  padding: 12px 12px calc(20px + var(--safe-bottom));
+  padding: 0 16px calc(26px + var(--safe-bottom));
 }
 
 .stats {
   display: flex;
   align-items: center;
-  margin-top: 12px;
-  padding: 14px 0;
-  border-radius: var(--radius-lg);
-  background: #fff;
-  box-shadow: 0 10px 26px rgba(20, 22, 26, 0.1);
+  padding: 24px 0;
+  border-bottom: 1px solid var(--hairline);
 }
 
 .stat {
   display: flex;
   flex: 1;
   flex-direction: column;
-  align-items: center;
-  gap: 3px;
+  align-items: flex-start;
+  gap: 6px;
+  padding-left: 4px;
 }
 
 .stat b {
-  color: var(--c-ink);
-  font-size: 20px;
-  font-weight: 700;
+  color: var(--ink);
+  font-size: 32px;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.04em;
   font-variant-numeric: tabular-nums;
 }
 
 .stat span {
-  color: var(--c-muted);
-  font-size: 11.5px;
+  color: #666b73;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
 }
 
 .divider {
   width: 1px;
-  height: 26px;
-  background: var(--c-line);
+  height: 38px;
+  background: var(--hairline);
 }
 
 .menu {
-  margin-top: 12px;
-  overflow: hidden;
-  border-radius: var(--radius-lg);
-  background: #fff;
-  box-shadow: var(--shadow-card);
+  margin-top: 8px;
 }
 
 .menu-item {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   width: 100%;
-  height: 54px;
-  padding: 0 16px;
+  height: 56px;
+  border-bottom: 1px solid var(--hairline);
   text-align: left;
 }
 
-.menu-item + .menu-item {
-  border-top: 1px solid #f4f5f7;
-}
-
 .menu-item:active {
-  background: #fafbfc;
+  background: rgba(255, 255, 255, 0.03);
 }
 
-.menu-icon {
-  display: grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 9px;
-}
-
-.menu-icon.heart {
-  color: #ef3b34;
-  background: #fff1ef;
-}
-
-.menu-icon.clock {
-  color: #2f7dd1;
-  background: #eef5fd;
-}
-
-.menu-icon.edit {
-  color: #8a5ad6;
-  background: #f4effd;
-}
-
-.menu-icon.rss {
-  color: #e8622c;
-  background: #fff2e8;
+.index {
+  flex: 0 0 auto;
+  width: 22px;
+  color: #5f646c;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
 }
 
 .menu-label {
   flex: 1;
-  font-size: 15px;
+  color: var(--ink);
+  font-size: 14px;
 }
 
 .chevron {
-  color: #c4c9d1;
+  color: #5f646c;
+  font-family: var(--font-mono);
+  font-size: 13px;
 }
 
 .logout {
   width: 100%;
-  height: 50px;
-  margin-top: 12px;
-  border-radius: var(--radius-lg);
-  color: var(--c-danger);
-  background: #fff;
-  box-shadow: var(--shadow-card);
-  font-size: 15px;
-  font-weight: 500;
+  height: 44px;
+  margin-top: 28px;
+  border: 1px solid var(--pill-border);
+  border-radius: var(--pill);
+  color: var(--ink);
+  background: transparent;
+  font-size: 12.5px;
 }
 
 .logout:active {
-  background: #fff6f5;
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .about {
-  padding: 26px 0 8px;
-  color: #bcc2cb;
-  font-size: 11px;
-  line-height: 1.8;
+  padding: 30px 0 0;
+  color: #4d5158;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  line-height: 2;
   text-align: center;
 }
 
@@ -585,38 +508,41 @@ function doLogout() {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  background: rgba(15, 17, 21, 0.44);
-  backdrop-filter: blur(2px);
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(4px);
 }
 
 .sheet {
   width: min(100%, 560px);
   max-height: 90dvh;
-  padding: 8px 20px calc(18px + var(--safe-bottom));
+  padding: 10px 20px calc(20px + var(--safe-bottom));
   overflow-y: auto;
-  border-radius: 24px 24px 0 0;
-  background: #f7f8fa;
-  box-shadow: 0 -12px 40px rgba(15, 17, 21, 0.2);
+  border-top: 1px solid var(--hairline);
+  border-radius: 14px 14px 0 0;
+  background: #0f1012;
 }
 
 .grabber {
-  width: 38px;
-  height: 4px;
-  margin: 6px auto 10px;
+  width: 36px;
+  height: 2px;
+  margin: 4px auto 16px;
   border-radius: 2px;
-  background: #d5d9df;
+  background: #2a2d31;
 }
 
 .sheet-head {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 14px;
+  margin-bottom: 20px;
 }
 
 .sheet-head h3 {
-  font-size: 19px;
-  font-weight: 700;
+  margin-top: 8px;
+  color: var(--ink);
+  font-size: 24px;
+  font-weight: 400;
+  letter-spacing: -0.03em;
 }
 
 .close {
@@ -624,36 +550,37 @@ function doLogout() {
   place-items: center;
   width: 34px;
   height: 34px;
+  border: 1px solid var(--pill-border);
   border-radius: 50%;
-  color: var(--c-ink-2);
-  background: #e9ebef;
+  color: var(--ink);
 }
 
 .field {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-bottom: 14px;
+  gap: 9px;
+  margin-bottom: 20px;
 }
 
-.field > span {
-  padding-left: 2px;
-  color: var(--c-ink-2);
-  font-size: 13px;
-  font-weight: 600;
+.label {
+  color: #666b73;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
 }
 
 .field input,
 .field textarea {
   width: 100%;
   padding: 12px 14px;
-  border: 1.5px solid #e3e6ea;
-  border-radius: 13px;
-  background: #fff;
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+  background: #151619;
+  color: var(--ink);
   outline: none;
   resize: none;
-  transition: border-color 0.16s ease, box-shadow 0.16s ease;
+  transition: border-color 0.16s ease;
 }
 
 .field input {
@@ -662,17 +589,18 @@ function doLogout() {
 
 .field input:focus,
 .field textarea:focus {
-  border-color: rgba(239, 59, 52, 0.6);
-  box-shadow: 0 0 0 3px rgba(239, 59, 52, 0.1);
+  border-color: #3d4147;
 }
 
 .field em {
   position: absolute;
   right: 4px;
   bottom: -16px;
-  color: #b6bcc6;
-  font-size: 10.5px;
+  color: #4d5158;
+  font-family: var(--font-mono);
+  font-size: 8.5px;
   font-style: normal;
+  letter-spacing: 0.08em;
 }
 
 .segmented {
@@ -683,34 +611,31 @@ function doLogout() {
 
 .segmented button {
   height: 42px;
-  border: 1.5px solid #e3e6ea;
-  border-radius: 12px;
-  color: var(--c-ink-2);
-  background: #fff;
-  font-size: 14px;
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+  color: var(--mute);
+  background: transparent;
+  font-size: 13px;
 }
 
 .segmented button.active {
-  border-color: var(--c-primary);
-  color: var(--c-primary);
-  background: var(--c-primary-soft);
-  font-weight: 600;
+  border-color: var(--ink);
+  color: var(--canvas);
+  background: var(--ink);
 }
 
 .save {
   width: 100%;
-  height: 50px;
-  margin-top: 8px;
-  border-radius: 14px;
-  color: #fff;
-  background: linear-gradient(135deg, #ff6b57, var(--c-primary));
-  box-shadow: 0 8px 20px rgba(239, 59, 52, 0.26);
-  font-size: 16px;
-  font-weight: 600;
+  height: 48px;
+  margin-top: 10px;
+  border-radius: var(--pill);
+  color: var(--canvas);
+  background: var(--ink);
+  font-size: 13.5px;
 }
 
 .save:active:not(:disabled) {
-  transform: scale(0.98);
+  background: var(--ink-dim);
 }
 
 .sheet-enter-active,

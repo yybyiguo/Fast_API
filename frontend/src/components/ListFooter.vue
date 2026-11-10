@@ -12,14 +12,14 @@ defineEmits(['retry'])
 <template>
   <div class="footer">
     <button v-if="error" type="button" class="retry" @click="$emit('retry')">
-      加载失败，点击重试
+      RETRY
     </button>
     <span v-else-if="loadingMore" class="loading">
       <i class="spinner" aria-hidden="true"></i>
-      加载中…
+      LOADING
     </span>
-    <span v-else-if="!hasMore" class="end">已经到底了 · 共 {{ total }} 条</span>
-    <span v-else class="end">上拉加载更多</span>
+    <span v-else-if="!hasMore" class="end">END OF FEED · {{ total }}</span>
+    <span v-else class="end">SCROLL FOR MORE</span>
   </div>
 </template>
 
@@ -28,32 +28,39 @@ defineEmits(['retry'])
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 52px;
-  padding: 10px 0 22px;
-  color: #b1b7c0;
-  font-size: 12px;
+  min-height: 56px;
+  padding: 12px 0 26px;
+  color: #5f646c;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 
 .loading {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
 }
 
 .spinner {
-  width: 14px;
-  height: 14px;
-  border: 2px solid #e3e5e9;
-  border-top-color: var(--c-primary);
+  width: 12px;
+  height: 12px;
+  border: 1px solid #3a3e44;
+  border-top-color: var(--ink);
   border-radius: 50%;
-  animation: spin 0.7s linear infinite;
+  animation: spin 0.8s linear infinite;
 }
 
 .retry {
-  padding: 8px 16px;
-  border-radius: 999px;
-  color: var(--c-primary);
-  background: var(--c-primary-soft);
-  font-size: 12.5px;
+  height: 30px;
+  padding: 0 14px;
+  border: 1px solid var(--pill-border);
+  border-radius: var(--pill);
+  color: var(--ink);
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
 }
 </style>

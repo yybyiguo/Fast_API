@@ -199,12 +199,15 @@ onBeforeUnmount(() => clearTimeout(reloadTimer))
 <template>
   <div class="page">
     <AppHeader title="订阅源" back>
-      <button type="button" class="header-action" @click="formOpen = !formOpen">
+      <button v-if="!denied" type="button" class="header-action" @click="formOpen = !formOpen">
         {{ formOpen ? '收起' : '添加' }}
       </button>
     </AppHeader>
 
     <div class="scroll">
+      <div class="section-head">
+        <span class="eyebrow no-dot">RSS SOURCES</span>
+      </div>
       <p class="hint">定时抓取 RSS；每个源会在首页生成一个同名分类，文章只在那个分类下展示。</p>
 
       <form v-if="formOpen" class="card form" @submit.prevent="submit">
@@ -309,59 +312,67 @@ onBeforeUnmount(() => clearTimeout(reloadTimer))
 
 <style scoped>
 .header-action {
-  padding: 8px 6px;
-  color: var(--c-primary);
-  font-size: 13.5px;
+  height: 30px;
+  padding: 0 14px;
+  border: 1px solid var(--pill-border);
+  border-radius: var(--pill);
+  color: var(--ink);
+  background: transparent;
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
 }
 
 .scroll {
   padding-bottom: calc(24px + var(--safe-bottom));
 }
 
+.section-head {
+  padding: 20px 16px 0;
+}
+
 .hint {
   padding: 12px 16px 0;
-  color: var(--c-muted);
-  font-size: 12.5px;
-  line-height: 1.6;
+  color: var(--mute);
+  font-size: 12px;
+  line-height: 1.7;
 }
 
 .card {
-  margin: 12px;
-  padding: 16px;
-  border-radius: var(--radius-lg);
-  background: #fff;
-  box-shadow: var(--shadow-card);
+  margin: 16px 12px 0;
+  padding: 18px 16px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  background: var(--canvas-card);
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-bottom: 12px;
+  gap: 9px;
+  margin-bottom: 16px;
 }
 
 .field > span {
-  color: var(--c-ink-2);
-  font-size: 12.5px;
-  font-weight: 600;
+  color: #666b73;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
 }
 
-.field input,
-.field select {
+.field input {
   width: 100%;
-  height: 44px;
-  padding: 0 12px;
-  border: 1.5px solid #e3e6ea;
-  border-radius: 12px;
-  background: #fff;
+  height: 46px;
+  padding: 0 14px;
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+  background: #151619;
+  color: var(--ink);
   outline: none;
-  transition: border-color 0.16s ease, box-shadow 0.16s ease;
+  transition: border-color 0.16s ease;
 }
 
-.field input:focus,
-.field select:focus {
-  border-color: rgba(239, 59, 52, 0.6);
-  box-shadow: 0 0 0 3px rgba(239, 59, 52, 0.1);
+.field input:focus {
+  border-color: #3d4147;
 }
 
 .row {
@@ -374,16 +385,14 @@ onBeforeUnmount(() => clearTimeout(reloadTimer))
   width: 100%;
   height: 46px;
   margin-top: 4px;
-  border-radius: 13px;
-  color: #fff;
-  background: linear-gradient(135deg, #ff6b57, var(--c-primary));
-  box-shadow: 0 8px 20px rgba(239, 59, 52, 0.26);
-  font-size: 15px;
-  font-weight: 600;
+  border-radius: var(--pill);
+  color: var(--canvas);
+  background: var(--ink);
+  font-size: 13px;
 }
 
 .primary:active:not(:disabled) {
-  transform: scale(0.98);
+  background: var(--ink-dim);
 }
 
 .list {
@@ -391,19 +400,19 @@ onBeforeUnmount(() => clearTimeout(reloadTimer))
   flex-direction: column;
   gap: 10px;
   margin: 0;
-  padding: 8px 12px 0;
+  padding: 14px 12px 0;
   list-style: none;
 }
 
 .feed {
-  padding: 14px;
-  border-radius: 16px;
-  background: #fff;
-  box-shadow: var(--shadow-card);
+  padding: 16px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  background: var(--canvas-card);
 }
 
 .feed.off {
-  opacity: 0.72;
+  opacity: 0.5;
 }
 
 .feed-head {
@@ -415,8 +424,8 @@ onBeforeUnmount(() => clearTimeout(reloadTimer))
 
 .name {
   overflow: hidden;
-  font-size: 15.5px;
-  font-weight: 600;
+  color: var(--ink);
+  font-size: 16px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -424,32 +433,31 @@ onBeforeUnmount(() => clearTimeout(reloadTimer))
 .status {
   flex: 0 0 auto;
   padding: 3px 9px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 600;
+  border: 1px solid var(--hairline);
+  border-radius: var(--pill);
+  color: var(--mute);
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
 }
 
 .status.ok {
-  color: #0f8a4d;
-  background: #e9f9f0;
+  border-color: var(--pill-border);
+  color: var(--ink);
 }
 
 .status.error {
-  color: #c0392b;
-  background: #fdecea;
-}
-
-.status.idle,
-.status.off {
-  color: #8b919b;
-  background: #f2f3f5;
+  border-color: rgba(255, 122, 23, 0.35);
+  color: var(--accent-soft);
 }
 
 .url {
-  margin-top: 6px;
+  margin-top: 8px;
   overflow: hidden;
-  color: #9aa1ab;
-  font-size: 11.5px;
+  color: #5f646c;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.02em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -458,45 +466,46 @@ onBeforeUnmount(() => clearTimeout(reloadTimer))
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  margin-top: 8px;
-  color: var(--c-muted);
-  font-size: 12px;
+  margin-top: 10px;
+  color: #666b73;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.08em;
 }
 
 .error {
-  margin-top: 8px;
+  margin-top: 10px;
   padding: 8px 10px;
-  border-radius: 9px;
-  color: #b3261e;
-  background: #fdf1f0;
-  font-size: 11.5px;
-  line-height: 1.5;
+  border: 1px solid rgba(255, 122, 23, 0.28);
+  border-radius: 4px;
+  color: var(--accent-soft);
+  font-size: 11px;
+  line-height: 1.6;
   word-break: break-word;
 }
 
 .ops {
   display: flex;
   gap: 8px;
-  margin-top: 12px;
+  margin-top: 14px;
 }
 
 .ops button {
   flex: 1;
-  height: 34px;
-  border: 1px solid #e6e8ec;
-  border-radius: 10px;
-  color: var(--c-ink-2);
-  background: #fafbfc;
-  font-size: 12.5px;
+  height: 32px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--pill);
+  color: var(--ink);
+  background: transparent;
+  font-size: 11.5px;
 }
 
 .ops button.danger {
-  color: var(--c-danger);
-  border-color: #f6d5d2;
-  background: #fff7f6;
+  border-color: rgba(255, 122, 23, 0.3);
+  color: var(--accent-soft);
 }
 
 .ops button:active:not(:disabled) {
-  background: #f2f3f5;
+  background: rgba(255, 255, 255, 0.06);
 }
 </style>

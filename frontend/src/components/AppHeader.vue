@@ -17,12 +17,12 @@ function goBack() {
 <template>
   <header class="topbar">
     <button v-if="back" type="button" class="back" aria-label="返回" @click="goBack">
-      <svg viewBox="0 0 24 24" width="21" height="21" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
         <path
           d="M14.5 5 8 12l6.5 7"
           fill="none"
           stroke="currentColor"
-          stroke-width="2"
+          stroke-width="1.6"
           stroke-linecap="round"
           stroke-linejoin="round"
         />
@@ -43,39 +43,41 @@ function goBack() {
   display: flex;
   align-items: center;
   flex: 0 0 auto;
-  gap: 4px;
-  height: calc(50px + var(--safe-top));
-  padding: var(--safe-top) 8px 0;
-  border-bottom: 1px solid var(--c-line);
-  background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(10px);
+  gap: 6px;
+  height: calc(54px + var(--safe-top));
+  padding: var(--safe-top) 12px 0;
+  border-bottom: 1px solid var(--hairline);
+  background: rgba(10, 10, 10, 0.92);
+  backdrop-filter: blur(14px);
 }
 
 .back,
 .back-placeholder {
   flex: 0 0 auto;
-  width: 42px;
-  height: 42px;
+  width: 36px;
+  height: 36px;
 }
 
 .back {
   display: grid;
   place-items: center;
+  border: 1px solid var(--pill-border);
   border-radius: 50%;
-  color: var(--c-ink);
-  transition: background 0.15s ease;
+  color: var(--ink);
+  transition: background 0.16s ease;
 }
 
 .back:active {
-  background: #f2f3f5;
+  background: rgba(255, 255, 255, 0.08);
 }
 
 h1 {
   flex: 1 1 auto;
   overflow: hidden;
-  font-size: 16.5px;
-  font-weight: 600;
-  letter-spacing: 0.2px;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
   text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -86,8 +88,7 @@ h1 {
   align-items: center;
   justify-content: flex-end;
   flex: 0 0 auto;
-  min-width: 42px;
-  height: 42px;
-  padding-right: 4px;
+  min-width: 36px;
+  height: 36px;
 }
 </style>

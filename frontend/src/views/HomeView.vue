@@ -54,16 +54,8 @@ async function refreshTop() {
 <template>
   <div class="page">
     <header class="hero">
-      <div class="glow" aria-hidden="true"></div>
-
       <div class="hero-top">
-        <div class="brand">
-          <span class="logo" aria-hidden="true">讯</span>
-          <div class="brand-text">
-            <h1>今日资讯</h1>
-            <p>{{ today }} · 发现新鲜事</p>
-          </div>
-        </div>
+        <span class="eyebrow">FEED · {{ today }}</span>
 
         <button
           type="button"
@@ -72,17 +64,22 @@ async function refreshTop() {
           :disabled="refreshing || !activeCategory"
           @click="refreshTop"
         >
-          <svg :class="{ spin: refreshing }" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+          <svg :class="{ spin: refreshing }" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
             <path
               d="M20 11.5A8 8 0 1 0 18.4 16M20 5v5h-5"
               fill="none"
               stroke="currentColor"
-              stroke-width="2"
+              stroke-width="1.5"
               stroke-linecap="round"
               stroke-linejoin="round"
             />
           </svg>
         </button>
+      </div>
+
+      <div class="brand">
+        <h1>今日资讯</h1>
+        <p>把信息流收束成一条线</p>
       </div>
 
       <div v-if="categories.length" class="cats no-scrollbar" role="tablist" aria-label="订阅源">
@@ -102,7 +99,7 @@ async function refreshTop() {
 
       <div v-else-if="catLoading" class="cats" aria-hidden="true">
         <span class="chip-skeleton shimmer"></span>
-        <span class="chip-skeleton shimmer short"></span>
+        <span class="chip-skeleton short shimmer"></span>
       </div>
     </header>
 
@@ -140,125 +137,88 @@ async function refreshTop() {
 
 <style scoped>
 .hero {
-  position: relative;
   flex: 0 0 auto;
-  padding: calc(10px + var(--safe-top)) 16px 12px;
-  overflow: hidden;
-  color: #fff;
-  background: linear-gradient(145deg, #ff6b57 0%, #ef3b34 52%, #dc2b25 100%);
-}
-
-.glow {
-  position: absolute;
-  top: -140px;
-  right: -80px;
-  width: 260px;
-  height: 260px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 232, 214, 0.45), transparent 66%);
-  pointer-events: none;
+  padding: calc(14px + var(--safe-top)) 16px 0;
+  background: var(--canvas);
 }
 
 .hero-top {
-  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
-
-.logo {
-  display: grid;
-  place-items: center;
-  flex: 0 0 auto;
-  width: 40px;
-  height: 40px;
-  border: 1px solid rgba(255, 255, 255, 0.34);
-  border-radius: 13px;
-  background: rgba(255, 255, 255, 0.18);
-  font-size: 19px;
-  font-weight: 700;
-  backdrop-filter: blur(6px);
-}
-
-.brand-text {
-  min-width: 0;
-}
-
-h1 {
-  font-size: 19px;
-  font-weight: 700;
-  letter-spacing: 0.4px;
-}
-
-.brand-text p {
-  margin-top: 2px;
-  overflow: hidden;
-  color: rgba(255, 255, 255, 0.82);
-  font-size: 11.5px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  gap: 12px;
 }
 
 .icon-btn {
   display: grid;
   place-items: center;
   flex: 0 0 auto;
-  width: 38px;
-  height: 38px;
-  border: 1px solid rgba(255, 255, 255, 0.26);
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--pill-border);
   border-radius: 50%;
-  color: #fff;
-  background: rgba(255, 255, 255, 0.14);
-  transition: transform 0.15s ease;
+  color: var(--ink);
+  background: transparent;
+  transition: background 0.16s ease;
 }
 
 .icon-btn:active {
-  transform: scale(0.92);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.brand {
+  margin-top: 18px;
+}
+
+h1 {
+  color: var(--ink);
+  font-size: clamp(34px, 10vw, 42px);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.045em;
+}
+
+.brand p {
+  margin-top: 9px;
+  color: var(--mute);
+  font-size: 12.5px;
+  letter-spacing: 0.01em;
 }
 
 .cats {
-  position: relative;
   display: flex;
   gap: 8px;
-  margin-top: 12px;
-  padding-bottom: 1px;
+  margin-top: 20px;
+  padding-bottom: 14px;
   overflow-x: auto;
+  border-bottom: 1px solid var(--hairline);
 }
 
 .cat {
   flex: 0 0 auto;
   height: 32px;
-  padding: 0 15px;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 999px;
-  color: #fff;
-  background: rgba(255, 255, 255, 0.16);
-  font-size: 13.5px;
+  padding: 0 14px;
+  border: 1px solid var(--pill-border);
+  border-radius: var(--pill);
+  color: var(--ink);
+  background: transparent;
+  font-size: 12.5px;
+  letter-spacing: 0.01em;
   white-space: nowrap;
-  transition: background 0.16s ease, color 0.16s ease;
+  transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
 }
 
 .cat.active {
-  border-color: #fff;
-  color: #e5352c;
-  background: #fff;
-  box-shadow: 0 4px 12px rgba(120, 12, 8, 0.18);
-  font-weight: 700;
+  border-color: var(--ink);
+  color: var(--canvas);
+  background: var(--ink);
 }
 
 .chip-skeleton {
   width: 62px;
   height: 32px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.22);
+  border-radius: var(--pill);
+  background: #17181b;
 }
 
 .chip-skeleton.short {
@@ -273,10 +233,10 @@ h1 {
 .shimmer::after {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
   content: '';
   transform: translateX(-100%);
-  animation: sweep 1.4s infinite;
+  animation: sweep 1.5s infinite;
 }
 
 @keyframes sweep {

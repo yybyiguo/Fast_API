@@ -12,6 +12,10 @@
 - **个人中心**：资料展示与编辑（昵称 / 简介 / 性别）、收藏与历史数量统计、退出登录
 - **移动端适配**：安全区、`100dvh`、底部 TabBar、下拉刷新、点击反馈、输入框防 iOS 缩放、`IntersectionObserver` 触底加载
 
+## 界面风格
+
+界面按 `DESIGN.md` 的 xAI 设计语言重构：`#0a0a0a` 近黑画布、白色描边胶囊按钮、8px hairline 卡片、Inter / Geist Mono 双字体、橙色仅作极少量点缀，全局无阴影、无浅色模式。
+
 ## 效果预览
 
 | 首页 | 详情 | 登录 |
@@ -101,9 +105,9 @@ frontend/
 2. **列表首次请求为空**：`curd/news.py::get_news_list` 在缓存未命中时把 `result.scalars().all()` 消费了两次，第一次返回空列表但已写入 Redis。前端检测到「列表为空且 total > 0」时自动补一次请求，命中缓存后恢复正常。
 3. **字段命名不统一**：列表返回 `snake_case`，详情 / 收藏 / 历史返回 `camelCase`；`normalizeNewsItem` 同时兼容两套写法。
 4. **拼写与分页字段**：列表总数是 `totol`（后端拼写），新闻分页是 `hasmore`，收藏/历史是 `has_more` —— 均已兼容。
-5. **历史新增路径**：后端写成 `@router.post('add_history')`，实际路径是 `/api/historyadd_history`，前端按真实路径调用。
+5. **历史新增路径**：后端路由是 `/api/history/add_history`（prefix 拼接），前端按真实路径调用。
 6. **收藏时间是 UTC**：`Favorite.created_at` 用 `datetime.utcnow`，而新闻、历史是本地时间；收藏时间单独按 UTC 解析后再显示「刚刚 / x 小时前」。
-7. **图片与头像不可用**：`image` 常见值是 `"无"` 或 `null`，默认头像 `file\p1.jpg` 也不是可访问 URL，且后端没有挂载静态目录。前端只渲染 `http(s)` 图片，其余走文字/渐变占位。
+7. **图片与头像不可用**：`image` 常见值是 `"无"` 或 `null`，默认头像 `file\p1.jpg` 也不是可访问 URL，且后端没有挂载静态目录。前端只渲染 `http(s)` 图片，其余走文字占位。
 8. **用户信息带密码哈希**：`userInfoResponse` 会返回 `password` 字段，前端 `normalizeUser` 只保留 UI 需要的字段，不会渲染或存储密码。
 9. **错误格式**：业务错误是 `{ code, message, data }` 且 HTTP 状态码真实（401/400/404/500），422 是 FastAPI 默认的 `detail` 数组；`http.js` 统一转成中文 `ApiError`。
 

@@ -116,6 +116,7 @@ function openRelated(id) {
 
     <div ref="scroller" class="scroll detail-scroll">
       <div v-if="loading" class="article-skeleton" aria-hidden="true">
+        <div class="sk eyebrow-line"></div>
         <div class="sk line w-90"></div>
         <div class="sk line w-70"></div>
         <div class="sk meta"></div>
@@ -136,13 +137,13 @@ function openRelated(id) {
       <template v-else-if="article">
         <article class="article">
           <div class="head">
-            <span v-if="categoryName" class="cat">{{ categoryName }}</span>
+            <span class="cat">/ {{ categoryName || 'ARTICLE' }}</span>
             <h1>{{ article.title }}</h1>
             <div class="meta">
               <span v-if="article.author">{{ article.author }}</span>
-              <span v-if="article.author" class="dot">·</span>
+              <span v-if="article.author" class="sep">/</span>
               <span>{{ formatRelativeTime(article.publishTime) }}</span>
-              <span class="dot">·</span>
+              <span class="sep">/</span>
               <span>{{ formatViews(article.views) }} 阅读</span>
             </div>
           </div>
@@ -163,12 +164,12 @@ function openRelated(id) {
             rel="noopener noreferrer"
           >
             查看全文
-            <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true">
               <path
                 d="M14 5h5v5M19 5l-7.5 7.5M17.5 13.5V18a1.5 1.5 0 0 1-1.5 1.5H6A1.5 1.5 0 0 1 4.5 18V7.5A1.5 1.5 0 0 1 6 6h4.5"
                 fill="none"
                 stroke="currentColor"
-                stroke-width="1.7"
+                stroke-width="1.5"
                 stroke-linecap="round"
                 stroke-linejoin="round"
               />
@@ -177,6 +178,7 @@ function openRelated(id) {
         </article>
 
         <section v-if="article.related.length" class="related">
+          <span class="eyebrow no-dot">RELATED</span>
           <h2>相关推荐</h2>
           <button
             v-for="item in article.related"
@@ -187,12 +189,12 @@ function openRelated(id) {
           >
             <span class="related-title">{{ item.title }}</span>
             <span class="related-meta">
-              {{ item.author || '匿名' }} · {{ formatViews(item.views) }} 阅读
+              {{ item.author || '匿名' }} / {{ formatViews(item.views) }} 阅读
             </span>
           </button>
         </section>
 
-        <div class="footnote">— 本文由「今日资讯」整理 —</div>
+        <div class="footnote">END OF ARTICLE</div>
       </template>
     </div>
 
@@ -205,19 +207,19 @@ function openRelated(id) {
         :aria-pressed="favorited"
         @click="toggleFavorite"
       >
-        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true">
           <path
             d="M12 20.2S4.6 15.6 4.6 10.4A4.35 4.35 0 0 1 12 7.1a4.35 4.35 0 0 1 7.4 3.3c0 5.2-7.4 9.8-7.4 9.8z"
             :fill="favorited ? 'currentColor' : 'none'"
             stroke="currentColor"
-            stroke-width="1.7"
+            stroke-width="1.4"
             stroke-linejoin="round"
           />
         </svg>
         <span>{{ favorited ? '已收藏' : '收藏' }}</span>
       </button>
 
-      <span class="read-count">阅读 {{ formatViews(article.views) }}</span>
+      <span class="read-count">READ {{ formatViews(article.views) }}</span>
     </div>
   </div>
 </template>
@@ -228,32 +230,32 @@ function openRelated(id) {
 }
 
 .article {
-  padding: 20px 18px 28px;
-  background: #fff;
+  padding: 26px 20px 30px;
+  background: var(--canvas);
 }
 
 .head {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--hairline);
 }
 
 .cat {
-  align-self: flex-start;
-  padding: 3px 9px;
-  border-radius: 6px;
-  color: var(--c-primary);
-  background: var(--c-primary-soft);
-  font-size: 11.5px;
-  font-weight: 600;
+  color: var(--mute);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 
 h1 {
-  color: var(--c-ink);
-  font-size: 23px;
-  font-weight: 700;
-  line-height: 1.38;
-  letter-spacing: 0.2px;
+  color: var(--ink);
+  font-size: clamp(26px, 7.4vw, 32px);
+  font-weight: 400;
+  line-height: 1.24;
+  letter-spacing: -0.035em;
   word-break: break-word;
 }
 
@@ -261,31 +263,40 @@ h1 {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  color: var(--c-muted);
-  font-size: 12px;
+  color: #6b7078;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.sep {
+  padding: 0 7px;
+  color: #3c4046;
 }
 
 .cover {
-  margin-top: 16px;
+  margin-top: 22px;
   overflow: hidden;
-  border-radius: 12px;
-  background: #f2f3f5;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  background: var(--canvas-soft);
 }
 
 .cover img {
   display: block;
   width: 100%;
-  max-height: 300px;
+  max-height: 320px;
   object-fit: cover;
 }
 
 .content {
-  margin-top: 18px;
+  margin-top: 24px;
 }
 
 .content p {
-  margin-top: 14px;
-  color: #2f3339;
+  margin-top: 18px;
+  color: #c9cbd0;
   font-size: 16px;
   line-height: 1.9;
   text-align: justify;
@@ -296,52 +307,79 @@ h1 {
   margin-top: 0;
 }
 
+.source-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  margin-top: 24px;
+  padding: 0 16px;
+  border: 1px solid var(--pill-border);
+  border-radius: var(--pill);
+  color: var(--ink);
+  font-size: 12px;
+  text-decoration: none;
+  transition: background 0.16s ease;
+}
+
+.source-link:active {
+  background: rgba(255, 255, 255, 0.08);
+}
+
 .related {
-  margin-top: 10px;
-  padding: 18px 18px 8px;
-  background: #fff;
+  padding: 24px 20px 10px;
+  border-top: 1px solid var(--hairline);
+  background: var(--canvas);
 }
 
 .related h2 {
-  margin-bottom: 4px;
-  font-size: 15px;
-  font-weight: 600;
+  margin-top: 10px;
+  color: var(--ink);
+  font-size: 20px;
+  font-weight: 400;
+  letter-spacing: -0.02em;
 }
 
 .related-item {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
   width: 100%;
-  padding: 13px 0;
-  border-top: 1px solid #f1f2f4;
+  padding: 15px 0;
+  border-top: 1px solid var(--hairline);
   text-align: left;
 }
 
 .related-item:first-of-type {
+  margin-top: 8px;
   border-top: 0;
 }
 
 .related-title {
   display: -webkit-box;
   overflow: hidden;
-  color: var(--c-ink);
+  color: var(--ink);
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 400;
   line-height: 1.45;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
 
 .related-meta {
-  color: var(--c-muted);
-  font-size: 11.5px;
+  color: #666b73;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .footnote {
-  padding: 22px 0 8px;
-  color: #c0c5cd;
-  font-size: 11.5px;
+  padding: 30px 0 10px;
+  color: #4d5158;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
   text-align: center;
 }
 
@@ -351,58 +389,60 @@ h1 {
   justify-content: space-between;
   flex: 0 0 auto;
   gap: 12px;
-  padding: 9px 16px calc(9px + var(--safe-bottom));
-  border-top: 1px solid var(--c-line);
-  background: rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(12px);
+  padding: 10px 16px calc(10px + var(--safe-bottom));
+  border-top: 1px solid var(--hairline);
+  background: rgba(10, 10, 10, 0.94);
+  backdrop-filter: blur(14px);
 }
 
 .fav {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  height: 42px;
-  padding: 0 22px;
-  border: 1px solid rgba(239, 59, 52, 0.35);
-  border-radius: 999px;
-  color: var(--c-primary);
-  background: var(--c-primary-soft);
-  font-size: 14.5px;
-  font-weight: 600;
-  transition: transform 0.15s ease, background 0.16s ease, color 0.16s ease;
+  gap: 8px;
+  height: 40px;
+  padding: 0 18px;
+  border: 1px solid var(--pill-border);
+  border-radius: var(--pill);
+  color: var(--ink);
+  background: transparent;
+  font-size: 12.5px;
+  transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
 }
 
 .fav.on {
-  border-color: transparent;
-  color: #fff;
-  background: linear-gradient(135deg, #ff6b57, var(--c-primary));
-  box-shadow: 0 8px 18px rgba(239, 59, 52, 0.28);
-}
-
-.fav:active {
-  transform: scale(0.96);
+  border-color: var(--ink);
+  color: var(--canvas);
+  background: var(--ink);
 }
 
 .read-count {
-  color: var(--c-muted);
-  font-size: 12px;
+  color: #666b73;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 
 .article-skeleton {
-  padding: 24px 18px;
-  background: #fff;
+  padding: 28px 20px;
 }
 
 .sk {
-  border-radius: 8px;
-  background: linear-gradient(100deg, #eef0f3 20%, #f7f8fa 40%, #eef0f3 60%);
+  border-radius: 4px;
+  background: linear-gradient(100deg, #16171a 20%, #202226 40%, #16171a 60%);
   background-size: 220% 100%;
-  animation: shimmer 1.3s linear infinite;
+  animation: shimmer 1.4s linear infinite;
+}
+
+.eyebrow-line {
+  width: 80px;
+  height: 9px;
+  margin-bottom: 18px;
 }
 
 .line {
-  height: 22px;
+  height: 24px;
   margin-bottom: 12px;
 }
 
@@ -414,15 +454,15 @@ h1 {
   width: 70%;
 }
 
-.meta {
+.article-skeleton .meta {
   width: 45%;
-  height: 12px;
-  margin: 18px 0 26px;
+  height: 10px;
+  margin: 22px 0 30px;
 }
 
 .para {
-  height: 14px;
-  margin-bottom: 14px;
+  height: 13px;
+  margin-bottom: 16px;
 }
 
 .para.short {
@@ -436,25 +476,5 @@ h1 {
   to {
     background-position: -40% 0;
   }
-}
-
-.source-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 22px;
-  padding: 10px 16px;
-  border: 1px solid #ffd9d4;
-  border-radius: 999px;
-  color: var(--c-primary);
-  background: var(--c-primary-soft);
-  font-size: 13.5px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: transform 0.15s ease;
-}
-
-.source-link:active {
-  transform: scale(0.97);
 }
 </style>

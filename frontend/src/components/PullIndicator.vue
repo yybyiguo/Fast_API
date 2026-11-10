@@ -17,18 +17,18 @@ const rotation = computed(
 <template>
   <div class="pull" :class="{ dragging }" :style="{ height: `${pull}px` }" aria-hidden="true">
     <span class="icon" :class="{ spin: refreshing }" :style="refreshing ? null : { transform: rotation }">
-      <svg viewBox="0 0 24 24" width="18" height="18">
+      <svg viewBox="0 0 24 24" width="14" height="14">
         <path
           d="M12 4v13m0 0 5-5m-5 5-5-5"
           fill="none"
           stroke="currentColor"
-          stroke-width="2"
+          stroke-width="1.6"
           stroke-linecap="round"
           stroke-linejoin="round"
         />
       </svg>
     </span>
-    <span>{{ refreshing ? '正在刷新…' : ready ? '松开刷新' : '下拉刷新' }}</span>
+    <span>{{ refreshing ? 'REFRESHING' : ready ? 'RELEASE' : 'PULL TO REFRESH' }}</span>
   </div>
 </template>
 
@@ -37,10 +37,13 @@ const rotation = computed(
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
+  gap: 8px;
   overflow: hidden;
-  color: var(--c-muted);
-  font-size: 12px;
+  color: #5f646c;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
   transition: height 0.28s cubic-bezier(0.32, 0.72, 0, 1);
 }
 
