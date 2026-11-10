@@ -122,17 +122,20 @@ function doLogout() {
 
 <template>
   <div class="page">
-    <header class="profile-hero">
-      <div class="hero-top">
-        <span class="eyebrow">ACCOUNT</span>
-        <button v-if="user" type="button" class="edit-btn" @click="openEdit">编辑</button>
+    <header class="profile-head">
+      <div class="head-top">
+        <span class="kicker no-rule">PROFILE</span>
+        <button v-if="user" type="button" class="edit-btn" @click="openEdit">编辑资料</button>
       </div>
 
       <div v-if="!user" class="guest">
         <div class="avatar guest-avatar" aria-hidden="true">?</div>
-        <h2>未登录</h2>
+        <h2>登录后更精彩</h2>
         <p>收藏喜欢的资讯，自动同步浏览历史</p>
-        <button type="button" class="login-btn" @click="goLogin">登录 / 注册</button>
+        <button type="button" class="login-btn" @click="goLogin">
+          登录 / 注册
+          <span aria-hidden="true">→</span>
+        </button>
       </div>
 
       <div v-else class="me">
@@ -152,12 +155,12 @@ function doLogout() {
       <div v-if="user" class="stats">
         <button type="button" class="stat" @click="router.push('/favorites')">
           <b>{{ stats.loaded ? stats.favorites : '–' }}</b>
-          <span>SAVED</span>
+          <span>SAVED STORIES</span>
         </button>
         <i class="divider" aria-hidden="true"></i>
         <button type="button" class="stat" @click="router.push('/history')">
           <b>{{ stats.loaded ? stats.history : '–' }}</b>
-          <span>HISTORY</span>
+          <span>READING HISTORY</span>
         </button>
       </div>
 
@@ -192,7 +195,7 @@ function doLogout() {
       </button>
 
       <div class="about">
-        <p>TOUTIAO · MOBILE</p>
+        <p>今日资讯 · MOBILE EDITION</p>
         <p>VUE 3 / FASTAPI</p>
       </div>
     </div>
@@ -215,30 +218,30 @@ function doLogout() {
 
             <div class="sheet-head">
               <div>
-                <span class="eyebrow no-dot">EDIT PROFILE</span>
+                <span class="kicker no-rule">EDIT PROFILE</span>
                 <h3>编辑资料</h3>
               </div>
               <button type="button" class="close" aria-label="关闭" :disabled="saving" @click="editOpen = false">
                 <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-                  <path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                  <path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
                 </svg>
               </button>
             </div>
 
             <label class="field">
-              <span class="label">NICKNAME</span>
+              <span class="label">NICKNAME / 昵称</span>
               <input v-model="form.nickname" type="text" maxlength="50" placeholder="给自己起个昵称" />
               <em>{{ form.nickname.length }}/50</em>
             </label>
 
             <label class="field">
-              <span class="label">BIO</span>
+              <span class="label">BIO / 个人简介</span>
               <textarea v-model="form.bio" rows="3" maxlength="500" placeholder="介绍一下自己"></textarea>
               <em>{{ form.bio.length }}/500</em>
             </label>
 
             <div class="field">
-              <span class="label">GENDER</span>
+              <span class="label">GENDER / 性别</span>
               <div class="segmented">
                 <button
                   v-for="option in genders"
@@ -254,6 +257,7 @@ function doLogout() {
 
             <button type="button" class="save" :disabled="saving" @click="saveProfile">
               {{ saving ? '保存中…' : '保存' }}
+              <span aria-hidden="true">→</span>
             </button>
           </div>
         </div>
@@ -263,14 +267,15 @@ function doLogout() {
 </template>
 
 <style scoped>
-.profile-hero {
+.profile-head {
   flex: 0 0 auto;
-  padding: calc(16px + var(--safe-top)) 20px 24px;
-  border-bottom: 1px solid var(--hairline);
-  background: var(--canvas);
+  padding: calc(12px + var(--safe-top)) 16px 22px;
+  border-top: 3px solid var(--red);
+  border-bottom: 1px solid var(--ink);
+  background: var(--paper);
 }
 
-.hero-top {
+.head-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -279,17 +284,23 @@ function doLogout() {
 
 .edit-btn {
   height: 30px;
-  padding: 0 14px;
-  border: 1px solid var(--pill-border);
-  border-radius: var(--pill);
+  padding: 0 12px;
+  border: 1px solid var(--ink);
   color: var(--ink);
   background: transparent;
-  font-size: 11.5px;
+  font-size: 11px;
+  font-weight: 500;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+
+.edit-btn:active {
+  color: var(--white);
+  background: var(--ink);
 }
 
 .guest,
 .me {
-  margin-top: 26px;
+  margin-top: 24px;
 }
 
 .guest {
@@ -305,12 +316,12 @@ function doLogout() {
   width: 64px;
   height: 64px;
   overflow: hidden;
-  border: 1px solid var(--pill-border);
-  border-radius: 50%;
+  border: 1px solid var(--ink);
   color: var(--ink);
-  background: #131416;
-  font-size: 22px;
-  font-weight: 400;
+  background: var(--paper-warm);
+  font-family: var(--font-serif);
+  font-size: 26px;
+  font-weight: 600;
 }
 
 .avatar img {
@@ -322,7 +333,7 @@ function doLogout() {
 .guest-avatar {
   width: 56px;
   height: 56px;
-  color: var(--mute);
+  color: var(--muted);
   font-family: var(--font-mono);
   font-size: 18px;
 }
@@ -330,26 +341,35 @@ function doLogout() {
 .guest h2 {
   margin-top: 22px;
   color: var(--ink);
+  font-family: var(--font-serif);
   font-size: clamp(30px, 9vw, 38px);
-  font-weight: 400;
-  line-height: 1.04;
-  letter-spacing: -0.045em;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
 }
 
 .guest p {
   margin-top: 10px;
-  color: var(--mute);
+  color: var(--muted);
   font-size: 12.5px;
 }
 
 .login-btn {
-  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 42px;
   margin-top: 22px;
-  padding: 0 22px;
-  border-radius: var(--pill);
-  color: var(--canvas);
-  background: var(--ink);
-  font-size: 13px;
+  padding: 0 20px;
+  border: 1px solid var(--red);
+  color: var(--white);
+  background: var(--red);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.login-btn:active {
+  background: var(--red-dark);
 }
 
 .me {
@@ -367,27 +387,27 @@ function doLogout() {
 .me-info h2 {
   overflow: hidden;
   color: var(--ink);
-  font-size: clamp(26px, 8vw, 34px);
-  font-weight: 400;
+  font-family: var(--font-serif);
+  font-size: clamp(28px, 8vw, 36px);
+  font-weight: 700;
   line-height: 1.08;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.03em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .username {
   margin-top: 7px;
-  color: var(--mute);
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.1em;
+  color: var(--muted);
+  font-size: 10.5px;
+  letter-spacing: 0.02em;
 }
 
 .bio {
   display: -webkit-box;
   overflow: hidden;
   margin-top: 10px;
-  color: #9ca1a8;
+  color: var(--ink-soft);
   font-size: 12.5px;
   line-height: 1.6;
   -webkit-box-orient: vertical;
@@ -400,9 +420,9 @@ function doLogout() {
 
 .stats {
   display: flex;
-  align-items: center;
-  padding: 24px 0;
-  border-bottom: 1px solid var(--hairline);
+  align-items: stretch;
+  padding: 22px 0;
+  border-bottom: 1px solid var(--ink);
 }
 
 .stat {
@@ -410,34 +430,35 @@ function doLogout() {
   flex: 1;
   flex-direction: column;
   align-items: flex-start;
-  gap: 6px;
-  padding-left: 4px;
+  gap: 7px;
+  padding-left: 2px;
 }
 
 .stat b {
-  color: var(--ink);
-  font-size: 32px;
-  font-weight: 400;
+  color: var(--red);
+  font-family: var(--font-serif);
+  font-size: 38px;
+  font-weight: 600;
   line-height: 1;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
 }
 
 .stat span {
-  color: #666b73;
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.18em;
+  color: var(--muted);
+  font-size: 8.5px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
 }
 
 .divider {
   width: 1px;
-  height: 38px;
-  background: var(--hairline);
+  margin: 4px 0;
+  background: var(--line);
 }
 
 .menu {
-  margin-top: 8px;
+  margin-top: 6px;
 }
 
 .menu-item {
@@ -446,21 +467,20 @@ function doLogout() {
   gap: 14px;
   width: 100%;
   height: 56px;
-  border-bottom: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--line);
   text-align: left;
 }
 
 .menu-item:active {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--red-soft);
 }
 
 .index {
   flex: 0 0 auto;
   width: 22px;
-  color: #5f646c;
+  color: var(--red);
   font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.12em;
+  font-size: 10px;
 }
 
 .menu-label {
@@ -470,30 +490,29 @@ function doLogout() {
 }
 
 .chevron {
-  color: #5f646c;
-  font-family: var(--font-mono);
+  color: var(--muted);
   font-size: 13px;
 }
 
 .logout {
   width: 100%;
   height: 44px;
-  margin-top: 28px;
-  border: 1px solid var(--pill-border);
-  border-radius: var(--pill);
-  color: var(--ink);
+  margin-top: 26px;
+  border: 1px solid var(--red);
+  color: var(--red);
   background: transparent;
   font-size: 12.5px;
+  font-weight: 500;
 }
 
 .logout:active {
-  background: rgba(255, 255, 255, 0.08);
+  color: var(--white);
+  background: var(--red);
 }
 
 .about {
-  padding: 30px 0 0;
-  color: #4d5158;
-  font-family: var(--font-mono);
+  padding: 32px 0 0;
+  color: #9ca3af;
   font-size: 9px;
   letter-spacing: 0.16em;
   line-height: 2;
@@ -508,8 +527,7 @@ function doLogout() {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.72);
-  backdrop-filter: blur(4px);
+  background: rgba(24, 24, 27, 0.55);
 }
 
 .sheet {
@@ -517,17 +535,15 @@ function doLogout() {
   max-height: 90dvh;
   padding: 10px 20px calc(20px + var(--safe-bottom));
   overflow-y: auto;
-  border-top: 1px solid var(--hairline);
-  border-radius: 14px 14px 0 0;
-  background: #0f1012;
+  border-top: 3px solid var(--red);
+  background: var(--white);
 }
 
 .grabber {
   width: 36px;
   height: 2px;
   margin: 4px auto 16px;
-  border-radius: 2px;
-  background: #2a2d31;
+  background: var(--line);
 }
 
 .sheet-head {
@@ -540,8 +556,9 @@ function doLogout() {
 .sheet-head h3 {
   margin-top: 8px;
   color: var(--ink);
-  font-size: 24px;
-  font-weight: 400;
+  font-family: var(--font-serif);
+  font-size: 28px;
+  font-weight: 700;
   letter-spacing: -0.03em;
 }
 
@@ -550,57 +567,61 @@ function doLogout() {
   place-items: center;
   width: 34px;
   height: 34px;
-  border: 1px solid var(--pill-border);
-  border-radius: 50%;
+  border: 1px solid var(--ink);
   color: var(--ink);
+  background: transparent;
+}
+
+.close:active {
+  color: var(--white);
+  background: var(--ink);
 }
 
 .field {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 9px;
-  margin-bottom: 20px;
+  gap: 8px;
+  margin-bottom: 22px;
 }
 
 .label {
-  color: #666b73;
-  font-family: var(--font-mono);
+  color: var(--muted);
   font-size: 9px;
-  letter-spacing: 0.18em;
+  font-weight: 500;
+  letter-spacing: 0.14em;
 }
 
 .field input,
 .field textarea {
   width: 100%;
-  padding: 12px 14px;
-  border: 1px solid var(--hairline);
-  border-radius: 6px;
-  background: #151619;
+  padding: 10px 2px;
+  border: 0;
+  border-bottom: 1px solid #d4d4d8;
+  background: transparent;
   color: var(--ink);
   outline: none;
   resize: none;
-  transition: border-color 0.16s ease;
+  transition: border-color 0.18s ease;
 }
 
 .field input {
-  height: 48px;
+  height: 44px;
 }
 
 .field input:focus,
 .field textarea:focus {
-  border-color: #3d4147;
+  border-bottom-color: var(--red);
 }
 
 .field em {
   position: absolute;
-  right: 4px;
-  bottom: -16px;
-  color: #4d5158;
-  font-family: var(--font-mono);
-  font-size: 8.5px;
+  right: 2px;
+  bottom: -14px;
+  color: #9ca3af;
+  font-size: 9px;
   font-style: normal;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
 }
 
 .segmented {
@@ -611,31 +632,35 @@ function doLogout() {
 
 .segmented button {
   height: 42px;
-  border: 1px solid var(--hairline);
-  border-radius: 6px;
-  color: var(--mute);
+  border: 1px solid var(--line);
+  color: var(--ink-soft);
   background: transparent;
   font-size: 13px;
 }
 
 .segmented button.active {
-  border-color: var(--ink);
-  color: var(--canvas);
-  background: var(--ink);
+  border-color: var(--red);
+  color: var(--white);
+  background: var(--red);
 }
 
 .save {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   width: 100%;
   height: 48px;
   margin-top: 10px;
-  border-radius: var(--pill);
-  color: var(--canvas);
-  background: var(--ink);
+  padding: 0 18px;
+  border: 1px solid var(--red);
+  color: var(--white);
+  background: var(--red);
   font-size: 13.5px;
+  font-weight: 500;
 }
 
 .save:active:not(:disabled) {
-  background: var(--ink-dim);
+  background: var(--red-dark);
 }
 
 .sheet-enter-active,

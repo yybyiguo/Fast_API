@@ -35,39 +35,34 @@ const { toast } = useToast()
   align-items: center;
   gap: 10px;
   max-width: min(100%, 440px);
-  padding: 11px 14px;
-  border: 1px solid var(--hairline);
-  border-radius: 6px;
-  color: var(--ink);
-  background: rgba(16, 17, 19, 0.96);
+  padding: 11px 15px;
+  border-left: 3px solid var(--red);
+  color: var(--white);
+  background: var(--ink);
   font-size: 12.5px;
-  line-height: 1.45;
-  backdrop-filter: blur(12px);
+  line-height: 1.5;
 }
 
 .label {
   flex: 0 0 auto;
-  color: var(--mute);
-  font-family: var(--font-mono);
+  color: #fca5a5;
+  font-family: var(--font-sans);
   font-size: 9px;
+  font-weight: 700;
   letter-spacing: 0.16em;
 }
 
-.toast.error .label {
-  color: var(--accent-soft);
-}
-
 .toast.success .label {
-  color: var(--ink);
+  color: #fef2f2;
 }
 
 .text {
-  color: var(--ink-dim);
+  color: #f4f4f5;
 }
 
 .toast-enter-active,
 .toast-leave-active {
-  transition: opacity 0.22s ease, transform 0.22s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .toast-enter-from,

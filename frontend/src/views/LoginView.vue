@@ -81,16 +81,17 @@ async function submit() {
               d="M14.5 5 8 12l6.5 7"
               fill="none"
               stroke="currentColor"
-              stroke-width="1.6"
+              stroke-width="1.8"
               stroke-linecap="round"
               stroke-linejoin="round"
             />
           </svg>
         </button>
+        <span class="kicker no-rule">MEMBER ACCESS</span>
+        <span class="est">EST. 2026</span>
       </div>
 
       <div class="intro">
-        <span class="eyebrow">ACCESS · {{ isRegister ? 'NEW ACCOUNT' : 'SIGN IN' }}</span>
         <h1>{{ isRegister ? '创建账号' : '登录' }}</h1>
         <p>登录后同步收藏与浏览历史</p>
       </div>
@@ -119,41 +120,25 @@ async function submit() {
 
         <form novalidate @submit.prevent="submit">
           <label class="field">
-            <span class="label">USERNAME</span>
-            <span class="input">
-              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-                <circle cx="12" cy="8.2" r="3.5" fill="none" stroke="currentColor" stroke-width="1.4" />
-                <path
-                  d="M5 19.8c.5-3.4 3.3-5.4 7-5.4s6.5 2 7 5.4"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.4"
-                  stroke-linecap="round"
-                />
-              </svg>
-              <input
-                v-model="username"
-                type="text"
-                placeholder="用户名"
-                autocomplete="username"
-                enterkeyhint="next"
-                maxlength="50"
-                @input="errorMsg = ''"
-              />
-            </span>
+            <span class="label">USERNAME / 用户名</span>
+            <input
+              v-model="username"
+              type="text"
+              placeholder="至少 2 个字符"
+              autocomplete="username"
+              enterkeyhint="next"
+              maxlength="50"
+              @input="errorMsg = ''"
+            />
           </label>
 
           <label class="field">
-            <span class="label">PASSWORD</span>
-            <span class="input">
-              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-                <rect x="5" y="10" width="14" height="9.4" rx="2.3" fill="none" stroke="currentColor" stroke-width="1.4" />
-                <path d="M8.4 10V7.7a3.6 3.6 0 0 1 7.2 0V10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
-              </svg>
+            <span class="label">PASSWORD / 密码</span>
+            <span class="password">
               <input
                 v-model="password"
                 :type="showPassword ? 'text' : 'password'"
-                :placeholder="isRegister ? '设置密码（至少 6 位）' : '密码'"
+                :placeholder="isRegister ? '至少 6 位' : '输入密码'"
                 :autocomplete="isRegister ? 'new-password' : 'current-password'"
                 enterkeyhint="done"
                 maxlength="64"
@@ -165,25 +150,7 @@ async function submit() {
                 :aria-label="showPassword ? '隐藏密码' : '显示密码'"
                 @click="showPassword = !showPassword"
               >
-                <svg v-if="!showPassword" viewBox="0 0 24 24" width="17" height="17" aria-hidden="true">
-                  <path
-                    d="M2.6 12s3.4-5.6 9.4-5.6S21.4 12 21.4 12s-3.4 5.6-9.4 5.6S2.6 12 2.6 12z"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.4"
-                  />
-                  <circle cx="12" cy="12" r="2.4" fill="none" stroke="currentColor" stroke-width="1.4" />
-                </svg>
-                <svg v-else viewBox="0 0 24 24" width="17" height="17" aria-hidden="true">
-                  <path d="m4 4 16 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-                  <path
-                    d="M9.9 6.8A10.7 10.7 0 0 1 12 6.4c6 0 9.4 5.6 9.4 5.6a17 17 0 0 1-3 3.5M6.5 8.2A17.5 17.5 0 0 0 2.6 12S6 17.6 12 17.6c1.3 0 2.5-.3 3.5-.7"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.4"
-                    stroke-linecap="round"
-                  />
-                </svg>
+                {{ showPassword ? 'HIDE' : 'SHOW' }}
               </button>
             </span>
           </label>
@@ -204,81 +171,104 @@ async function submit() {
         </p>
       </div>
 
-      <button type="button" class="skip" @click="router.push('/')">先随便逛逛</button>
+      <button type="button" class="skip" @click="router.push('/')">
+        先随便逛逛
+        <span aria-hidden="true">→</span>
+      </button>
+
+      <p class="colophon">今日资讯 · MOBILE EDITION</p>
     </div>
   </div>
 </template>
 
 <style scoped>
 .login {
-  background: var(--canvas);
+  background: var(--paper);
 }
 
 .login-scroll {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding-bottom: calc(28px + var(--safe-bottom));
+  padding: 0 16px calc(28px + var(--safe-bottom));
 }
 
 .topbar {
-  padding: calc(14px + var(--safe-top)) 16px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: calc(14px + var(--safe-top));
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--ink);
 }
 
 .back {
   display: grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
-  border: 1px solid var(--pill-border);
-  border-radius: 50%;
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--ink);
   color: var(--ink);
-  transition: background 0.16s ease;
+  background: transparent;
 }
 
 .back:active {
-  background: rgba(255, 255, 255, 0.08);
+  color: var(--white);
+  background: var(--ink);
+}
+
+.kicker {
+  flex: 1;
+}
+
+.est {
+  color: var(--muted);
+  font-size: 9px;
+  letter-spacing: 0.12em;
 }
 
 .intro {
-  padding: 30px 20px 0;
+  padding: 34px 4px 0;
 }
 
 .intro h1 {
-  margin-top: 16px;
   color: var(--ink);
-  font-size: clamp(38px, 11vw, 48px);
-  font-weight: 400;
-  line-height: 1.02;
-  letter-spacing: -0.05em;
+  font-family: var(--font-serif);
+  font-size: clamp(42px, 12vw, 52px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.035em;
 }
 
 .intro p {
   margin-top: 12px;
-  color: var(--mute);
-  font-size: 12.5px;
+  color: var(--muted);
+  font-size: 13px;
 }
 
 .card {
-  margin: 26px 16px 0;
-  padding: 18px 18px 20px;
-  border: 1px solid var(--hairline);
-  border-radius: var(--radius);
-  background: #101113;
+  margin-top: 26px;
+  padding: 22px 20px 20px;
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--red);
+  background: var(--white);
 }
 
 .tabs {
   display: flex;
-  gap: 26px;
-  border-bottom: 1px solid var(--hairline);
+  gap: 24px;
+  border-bottom: 1px solid var(--line);
 }
 
 .tabs button {
   position: relative;
-  padding: 0 2px 13px;
-  color: var(--mute);
-  font-size: 13px;
-  transition: color 0.16s ease;
+  padding: 0 2px 12px;
+  color: var(--muted);
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 600;
+  transition: color 0.18s ease;
 }
 
 .tabs button.active {
@@ -290,8 +280,8 @@ async function submit() {
   right: 0;
   bottom: -1px;
   left: 0;
-  height: 1px;
-  background: var(--ink);
+  height: 2px;
+  background: var(--red);
   content: '';
 }
 
@@ -302,69 +292,75 @@ form {
 .field {
   display: flex;
   flex-direction: column;
-  gap: 9px;
-  margin-top: 18px;
+  gap: 8px;
+  margin-top: 20px;
 }
 
 .label {
-  color: #666b73;
-  font-family: var(--font-mono);
+  color: var(--muted);
   font-size: 9px;
-  letter-spacing: 0.18em;
+  font-weight: 500;
+  letter-spacing: 0.14em;
 }
 
-.input {
+.field input {
+  width: 100%;
+  height: 44px;
+  padding: 0 2px;
+  border: 0;
+  border-bottom: 1px solid #d4d4d8;
+  color: var(--ink);
+  background: transparent;
+  outline: none;
+  transition: border-color 0.18s ease;
+}
+
+.field input:focus {
+  border-bottom-color: var(--red);
+}
+
+.password {
   display: flex;
   align-items: center;
   gap: 10px;
-  height: 48px;
-  padding: 0 14px;
-  border: 1px solid var(--hairline);
-  border-radius: 6px;
-  color: #6b7078;
-  background: #151619;
-  transition: border-color 0.16s ease;
+  border-bottom: 1px solid #d4d4d8;
+  transition: border-color 0.18s ease;
 }
 
-.input:focus-within {
-  border-color: #3d4147;
-  color: var(--ink);
+.password:focus-within {
+  border-bottom-color: var(--red);
 }
 
-.input input {
+.password input {
   flex: 1;
   min-width: 0;
-  height: 100%;
-  border: 0;
-  background: transparent;
-  color: var(--ink);
-  outline: none;
+  border-bottom: 0;
 }
 
 .eye {
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  margin-right: -4px;
-  border-radius: 50%;
-  color: #6b7078;
+  flex: 0 0 auto;
+  padding: 8px 0;
+  color: var(--red);
+  font-family: var(--font-sans);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
 }
 
 .error {
   display: flex;
   gap: 8px;
-  margin: 16px 0 0;
-  color: var(--accent-soft);
+  margin-top: 18px;
+  color: var(--red-dark);
   font-size: 12px;
   line-height: 1.5;
 }
 
 .error span {
   flex: 0 0 auto;
-  font-family: var(--font-mono);
   font-size: 9px;
-  letter-spacing: 0.14em;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   line-height: 1.9;
 }
 
@@ -374,46 +370,49 @@ form {
   justify-content: space-between;
   width: 100%;
   height: 48px;
-  margin-top: 22px;
-  padding: 0 20px;
-  border-radius: var(--pill);
-  color: var(--canvas);
-  background: var(--ink);
+  margin-top: 24px;
+  padding: 0 18px;
+  border: 1px solid var(--red);
+  color: var(--white);
+  background: var(--red);
   font-size: 13.5px;
-  transition: background 0.16s ease;
-}
-
-.submit span {
-  font-family: var(--font-mono);
-  font-size: 13px;
+  font-weight: 500;
+  transition: background 0.18s ease;
 }
 
 .submit:active:not(:disabled) {
-  background: var(--ink-dim);
+  background: var(--red-dark);
 }
 
 .submit:disabled {
-  border: 1px solid var(--hairline);
-  color: var(--mute);
-  background: transparent;
-  opacity: 1;
+  border-color: #d4d4d8;
+  color: #6b7280;
+  background: #f4f4f5;
 }
 
 .tip {
   margin-top: 16px;
-  color: #5f646c;
+  color: var(--muted);
   font-size: 11px;
   line-height: 1.6;
 }
 
 .skip {
-  display: block;
-  height: 34px;
-  margin: 22px auto 0;
-  padding: 0 18px;
-  border: 1px solid var(--pill-border);
-  border-radius: var(--pill);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 24px 0 0 2px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--ink);
   color: var(--ink);
   font-size: 12px;
+}
+
+.colophon {
+  margin-top: 40px;
+  color: #9ca3af;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-align: center;
 }
 </style>

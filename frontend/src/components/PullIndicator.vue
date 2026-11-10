@@ -22,13 +22,13 @@ const rotation = computed(
           d="M12 4v13m0 0 5-5m-5 5-5-5"
           fill="none"
           stroke="currentColor"
-          stroke-width="1.6"
+          stroke-width="1.8"
           stroke-linecap="round"
           stroke-linejoin="round"
         />
       </svg>
     </span>
-    <span>{{ refreshing ? 'REFRESHING' : ready ? 'RELEASE' : 'PULL TO REFRESH' }}</span>
+    <span>{{ refreshing ? 'REFRESHING' : ready ? 'RELEASE TO REFRESH' : 'PULL TO REFRESH' }}</span>
   </div>
 </template>
 
@@ -39,11 +39,12 @@ const rotation = computed(
   justify-content: center;
   gap: 8px;
   overflow: hidden;
-  color: #5f646c;
-  font-family: var(--font-mono);
+  color: var(--red);
+  background: var(--white);
+  font-family: var(--font-sans);
   font-size: 9px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
+  font-weight: 500;
+  letter-spacing: 0.16em;
   transition: height 0.28s cubic-bezier(0.32, 0.72, 0, 1);
 }
 

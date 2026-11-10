@@ -29,7 +29,7 @@ function isActive(to) {
           d="M4 10.8 12 4l8 6.8V20a1 1 0 0 1-1 1h-4.6v-6.2H9.6V21H5a1 1 0 0 1-1-1z"
           fill="none"
           stroke="currentColor"
-          stroke-width="1.4"
+          stroke-width="1.6"
           stroke-linejoin="round"
         />
       </svg>
@@ -38,21 +38,21 @@ function isActive(to) {
           d="M12 20.2S4.6 15.6 4.6 10.4A4.35 4.35 0 0 1 12 7.1a4.35 4.35 0 0 1 7.4 3.3c0 5.2-7.4 9.8-7.4 9.8z"
           fill="none"
           stroke="currentColor"
-          stroke-width="1.4"
+          stroke-width="1.6"
           stroke-linejoin="round"
         />
       </svg>
       <svg v-else-if="item.icon === 'clock'" viewBox="0 0 24 24" width="21" height="21" aria-hidden="true">
-        <circle cx="12" cy="12" r="8.4" fill="none" stroke="currentColor" stroke-width="1.4" />
-        <path d="M12 7.3V12l3.1 1.9" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+        <circle cx="12" cy="12" r="8.4" fill="none" stroke="currentColor" stroke-width="1.6" />
+        <path d="M12 7.3V12l3.1 1.9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
       </svg>
       <svg v-else viewBox="0 0 24 24" width="21" height="21" aria-hidden="true">
-        <circle cx="12" cy="8.2" r="3.6" fill="none" stroke="currentColor" stroke-width="1.4" />
+        <circle cx="12" cy="8.2" r="3.6" fill="none" stroke="currentColor" stroke-width="1.6" />
         <path
           d="M4.8 20c.5-3.5 3.4-5.5 7.2-5.5s6.7 2 7.2 5.5"
           fill="none"
           stroke="currentColor"
-          stroke-width="1.4"
+          stroke-width="1.6"
           stroke-linecap="round"
         />
       </svg>
@@ -63,16 +63,17 @@ function isActive(to) {
 
 <style scoped>
 .tabbar {
+  position: relative;
   display: flex;
   flex: 0 0 auto;
   align-items: stretch;
   padding-bottom: var(--safe-bottom);
-  border-top: 1px solid var(--hairline);
-  background: rgba(10, 10, 10, 0.96);
-  backdrop-filter: blur(14px);
+  border-top: 2px solid var(--ink);
+  background: var(--white);
 }
 
 .tab {
+  position: relative;
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -80,18 +81,30 @@ function isActive(to) {
   justify-content: center;
   gap: 4px;
   height: var(--tabbar-h);
-  color: #6b7078;
-  font-size: 9.5px;
-  letter-spacing: 0.12em;
+  color: #6b7280;
+  font-size: 10px;
+  letter-spacing: 0.04em;
   text-decoration: none;
-  transition: color 0.16s ease;
+  transition: color 0.18s ease;
 }
 
 .tab.active {
-  color: var(--ink);
+  color: var(--red);
+  font-weight: 500;
+}
+
+.tab.active::before {
+  position: absolute;
+  top: -2px;
+  left: 50%;
+  width: 22px;
+  height: 2px;
+  background: var(--red);
+  content: '';
+  transform: translateX(-50%);
 }
 
 .tab:active {
-  color: var(--ink);
+  color: var(--red);
 }
 </style>

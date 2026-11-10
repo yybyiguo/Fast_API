@@ -33,9 +33,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
     <Transition name="dialog">
       <div v-if="open" class="mask" @click.self="!busy && emit('cancel')">
         <div class="dialog" role="alertdialog" aria-modal="true" :aria-label="title">
-          <span class="eyebrow" :class="{ alert: danger }">
-            {{ danger ? 'CONFIRM DELETE' : 'CONFIRM' }}
-          </span>
+          <span class="kicker no-rule">{{ danger ? 'CONFIRM DELETE' : 'CONFIRM' }}</span>
 
           <h2>{{ title }}</h2>
           <p>{{ message }}</p>
@@ -63,37 +61,34 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: rgba(0, 0, 0, 0.72);
-  backdrop-filter: blur(4px);
+  background: rgba(24, 24, 27, 0.55);
 }
 
 .dialog {
-  width: min(100%, 330px);
+  width: min(100%, 340px);
   padding: 22px 20px 18px;
-  border: 1px solid var(--hairline);
-  border-radius: 10px;
-  background: #101113;
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--red);
+  background: var(--white);
 }
 
-.eyebrow {
+.kicker {
   margin-bottom: 14px;
-}
-
-.eyebrow.alert::before {
-  background: var(--ink);
 }
 
 h2 {
   color: var(--ink);
-  font-size: 20px;
-  font-weight: 400;
-  letter-spacing: -0.02em;
+  font-family: var(--font-serif);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
 }
 
 p {
   margin-top: 10px;
-  color: var(--mute);
-  font-size: 12.5px;
+  color: var(--muted);
+  font-size: 13px;
   line-height: 1.7;
   word-break: break-word;
 }
@@ -107,33 +102,30 @@ p {
 
 .btn {
   height: 44px;
-  border-radius: var(--pill);
   font-size: 13px;
-  transition: background 0.16s ease, color 0.16s ease;
-}
-
-.btn:active:not(:disabled) {
-  transform: none;
+  font-weight: 500;
+  transition: background 0.18s ease, color 0.18s ease;
 }
 
 .ghost {
-  border: 1px solid var(--pill-border);
+  border: 1px solid var(--ink);
   color: var(--ink);
   background: transparent;
 }
 
 .ghost:active:not(:disabled) {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.solid {
-  border: 1px solid var(--ink);
-  color: var(--canvas);
+  color: var(--white);
   background: var(--ink);
 }
 
+.solid {
+  border: 1px solid var(--red);
+  color: var(--white);
+  background: var(--red);
+}
+
 .solid:active:not(:disabled) {
-  background: var(--ink-dim);
+  background: var(--red-dark);
 }
 
 .dialog-enter-active,
@@ -153,7 +145,7 @@ p {
 
 .dialog-enter-from .dialog,
 .dialog-leave-to .dialog {
-  transform: translateY(6px) scale(0.98);
+  transform: translateY(6px);
   opacity: 0;
 }
 </style>

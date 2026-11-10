@@ -112,11 +112,11 @@ function openRelated(id) {
 
 <template>
   <div class="page">
-    <AppHeader title="资讯详情" back />
+    <AppHeader title="今日资讯" back />
 
     <div ref="scroller" class="scroll detail-scroll">
       <div v-if="loading" class="article-skeleton" aria-hidden="true">
-        <div class="sk eyebrow-line"></div>
+        <div class="sk kicker-line"></div>
         <div class="sk line w-90"></div>
         <div class="sk line w-70"></div>
         <div class="sk meta"></div>
@@ -136,21 +136,20 @@ function openRelated(id) {
 
       <template v-else-if="article">
         <article class="article">
-          <div class="head">
-            <span class="cat">/ {{ categoryName || 'ARTICLE' }}</span>
-            <h1>{{ article.title }}</h1>
-            <div class="meta">
-              <span v-if="article.author">{{ article.author }}</span>
-              <span v-if="article.author" class="sep">/</span>
-              <span>{{ formatRelativeTime(article.publishTime) }}</span>
-              <span class="sep">/</span>
-              <span>{{ formatViews(article.views) }} 阅读</span>
-            </div>
+          <span class="kicker">{{ categoryName || 'NEWS' }}</span>
+          <h1>{{ article.title }}</h1>
+
+          <div class="byline">
+            <span v-if="article.author" class="author">{{ article.author }}</span>
+            <span v-if="article.author" class="sep">·</span>
+            <span>{{ formatRelativeTime(article.publishTime) }}</span>
+            <span class="sep">·</span>
+            <span>{{ formatViews(article.views) }} 阅读</span>
           </div>
 
-          <div v-if="cover" class="cover">
+          <figure v-if="cover" class="cover">
             <img :src="cover" alt="" @error="brokenImage = true" />
-          </div>
+          </figure>
 
           <div class="content">
             <p v-for="(paragraph, index) in paragraphs" :key="index">{{ paragraph }}</p>
@@ -163,13 +162,13 @@ function openRelated(id) {
             target="_blank"
             rel="noopener noreferrer"
           >
-            查看全文
+            阅读原文
             <svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true">
               <path
                 d="M14 5h5v5M19 5l-7.5 7.5M17.5 13.5V18a1.5 1.5 0 0 1-1.5 1.5H6A1.5 1.5 0 0 1 4.5 18V7.5A1.5 1.5 0 0 1 6 6h4.5"
                 fill="none"
                 stroke="currentColor"
-                stroke-width="1.5"
+                stroke-width="1.7"
                 stroke-linecap="round"
                 stroke-linejoin="round"
               />
@@ -178,23 +177,26 @@ function openRelated(id) {
         </article>
 
         <section v-if="article.related.length" class="related">
-          <span class="eyebrow no-dot">RELATED</span>
-          <h2>相关推荐</h2>
+          <span class="kicker">RELATED</span>
+          <h2>相关阅读</h2>
           <button
-            v-for="item in article.related"
+            v-for="(item, index) in article.related"
             :key="item.id"
             type="button"
             class="related-item"
             @click="openRelated(item.id)"
           >
-            <span class="related-title">{{ item.title }}</span>
-            <span class="related-meta">
-              {{ item.author || '匿名' }} / {{ formatViews(item.views) }} 阅读
+            <span class="related-index" aria-hidden="true">{{ String(index + 1).padStart(2, '0') }}</span>
+            <span class="related-body">
+              <span class="related-title">{{ item.title }}</span>
+              <span class="related-meta">
+                {{ item.author || '匿名' }} · {{ formatViews(item.views) }} 阅读
+              </span>
             </span>
           </button>
         </section>
 
-        <div class="footnote">END OF ARTICLE</div>
+        <div class="footnote">END OF ARTICLE · 今日资讯</div>
       </template>
     </div>
 
@@ -207,19 +209,19 @@ function openRelated(id) {
         :aria-pressed="favorited"
         @click="toggleFavorite"
       >
-        <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
           <path
             d="M12 20.2S4.6 15.6 4.6 10.4A4.35 4.35 0 0 1 12 7.1a4.35 4.35 0 0 1 7.4 3.3c0 5.2-7.4 9.8-7.4 9.8z"
             :fill="favorited ? 'currentColor' : 'none'"
             stroke="currentColor"
-            stroke-width="1.4"
+            stroke-width="1.6"
             stroke-linejoin="round"
           />
         </svg>
         <span>{{ favorited ? '已收藏' : '收藏' }}</span>
       </button>
 
-      <span class="read-count">READ {{ formatViews(article.views) }}</span>
+      <span class="read-count">{{ formatViews(article.views) }} READS</span>
     </div>
   </div>
 </template>
@@ -227,77 +229,73 @@ function openRelated(id) {
 <style scoped>
 .detail-scroll {
   padding-bottom: 24px;
+  background: var(--white);
 }
 
 .article {
-  padding: 26px 20px 30px;
-  background: var(--canvas);
+  padding: 24px 20px 30px;
+  background: var(--white);
 }
 
-.head {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid var(--hairline);
-}
-
-.cat {
-  color: var(--mute);
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+.kicker {
+  margin-bottom: 14px;
 }
 
 h1 {
   color: var(--ink);
-  font-size: clamp(26px, 7.4vw, 32px);
-  font-weight: 400;
-  line-height: 1.24;
-  letter-spacing: -0.035em;
+  font-family: var(--font-serif);
+  font-size: clamp(30px, 8.8vw, 38px);
+  font-weight: 700;
+  line-height: 1.16;
+  letter-spacing: -0.03em;
   word-break: break-word;
 }
 
-.meta {
+.byline {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  color: #6b7078;
-  font-family: var(--font-mono);
-  font-size: 9.5px;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
+  margin-top: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.author {
+  color: var(--ink);
+  font-weight: 500;
 }
 
 .sep {
   padding: 0 7px;
-  color: #3c4046;
+  color: #c4c4c8;
 }
 
 .cover {
-  margin-top: 22px;
-  overflow: hidden;
-  border: 1px solid var(--hairline);
-  border-radius: var(--radius);
-  background: var(--canvas-soft);
+  margin: 22px 0 0;
+  padding: 0;
+  border: 1px solid var(--ink);
+  background: var(--paper-warm);
 }
 
 .cover img {
   display: block;
   width: 100%;
-  max-height: 320px;
+  max-height: 340px;
   object-fit: cover;
 }
 
 .content {
+  max-width: 34em;
   margin-top: 24px;
 }
 
 .content p {
-  margin-top: 18px;
-  color: #c9cbd0;
-  font-size: 16px;
+  margin-top: 17px;
+  color: #27272a;
+  font-size: 16.5px;
   line-height: 1.9;
   text-align: justify;
   word-break: break-word;
@@ -307,79 +305,100 @@ h1 {
   margin-top: 0;
 }
 
+.content p:first-child::first-letter {
+  float: left;
+  padding: 5px 8px 0 0;
+  color: var(--red);
+  font-family: var(--font-serif);
+  font-size: 3.2em;
+  font-weight: 700;
+  line-height: 0.82;
+}
+
 .source-link {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  height: 34px;
-  margin-top: 24px;
-  padding: 0 16px;
-  border: 1px solid var(--pill-border);
-  border-radius: var(--pill);
-  color: var(--ink);
-  font-size: 12px;
+  margin-top: 26px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--red);
+  color: var(--red);
+  font-size: 12.5px;
+  font-weight: 500;
   text-decoration: none;
-  transition: background 0.16s ease;
-}
-
-.source-link:active {
-  background: rgba(255, 255, 255, 0.08);
 }
 
 .related {
-  padding: 24px 20px 10px;
-  border-top: 1px solid var(--hairline);
-  background: var(--canvas);
+  padding: 22px 20px 8px;
+  border-top: 1px solid var(--ink);
+  background: var(--white);
 }
 
 .related h2 {
   margin-top: 10px;
   color: var(--ink);
-  font-size: 20px;
-  font-weight: 400;
+  font-family: var(--font-serif);
+  font-size: 24px;
+  font-weight: 600;
   letter-spacing: -0.02em;
 }
 
 .related-item {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  align-items: flex-start;
+  gap: 12px;
   width: 100%;
-  padding: 15px 0;
-  border-top: 1px solid var(--hairline);
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
   text-align: left;
 }
 
 .related-item:first-of-type {
-  margin-top: 8px;
-  border-top: 0;
+  margin-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.related-index {
+  flex: 0 0 22px;
+  padding-top: 3px;
+  color: var(--red);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+.related-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
 }
 
 .related-title {
   display: -webkit-box;
   overflow: hidden;
   color: var(--ink);
-  font-size: 15px;
-  font-weight: 400;
-  line-height: 1.45;
+  font-family: var(--font-serif);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.35;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
 
 .related-meta {
-  color: #666b73;
-  font-family: var(--font-mono);
-  font-size: 9.5px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  color: var(--muted);
+  font-size: 10.5px;
 }
 
 .footnote {
-  padding: 30px 0 10px;
-  color: #4d5158;
-  font-family: var(--font-mono);
+  padding: 28px 0 10px;
+  border-top: 1px solid var(--line);
+  color: #9ca3af;
+  font-family: var(--font-sans);
   font-size: 9px;
-  letter-spacing: 0.2em;
+  font-weight: 500;
+  letter-spacing: 0.16em;
   text-align: center;
 }
 
@@ -390,9 +409,8 @@ h1 {
   flex: 0 0 auto;
   gap: 12px;
   padding: 10px 16px calc(10px + var(--safe-bottom));
-  border-top: 1px solid var(--hairline);
-  background: rgba(10, 10, 10, 0.94);
-  backdrop-filter: blur(14px);
+  border-top: 1px solid var(--ink);
+  background: var(--white);
 }
 
 .fav {
@@ -400,49 +418,53 @@ h1 {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  height: 40px;
-  padding: 0 18px;
-  border: 1px solid var(--pill-border);
-  border-radius: var(--pill);
-  color: var(--ink);
+  height: 42px;
+  padding: 0 20px;
+  border: 1px solid var(--red);
+  color: var(--red);
   background: transparent;
   font-size: 12.5px;
-  transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+  font-weight: 500;
+  transition: background 0.18s ease, color 0.18s ease;
 }
 
 .fav.on {
-  border-color: var(--ink);
-  color: var(--canvas);
-  background: var(--ink);
+  color: var(--white);
+  background: var(--red);
+}
+
+.fav:active {
+  color: var(--white);
+  background: var(--red);
 }
 
 .read-count {
-  color: #666b73;
-  font-family: var(--font-mono);
-  font-size: 9.5px;
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: 9px;
+  font-weight: 500;
   letter-spacing: 0.14em;
-  text-transform: uppercase;
 }
 
 .article-skeleton {
-  padding: 28px 20px;
+  padding: 26px 20px;
+  background: var(--white);
 }
 
 .sk {
-  border-radius: 4px;
-  background: linear-gradient(100deg, #16171a 20%, #202226 40%, #16171a 60%);
+  background: linear-gradient(100deg, #f1f1f3 20%, #fafafa 40%, #f1f1f3 60%);
   background-size: 220% 100%;
   animation: shimmer 1.4s linear infinite;
 }
 
-.eyebrow-line {
-  width: 80px;
+.kicker-line {
+  width: 72px;
   height: 9px;
   margin-bottom: 18px;
 }
 
 .line {
-  height: 24px;
+  height: 26px;
   margin-bottom: 12px;
 }
 

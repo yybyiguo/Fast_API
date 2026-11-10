@@ -5,32 +5,51 @@ import { resolveImage } from '../utils/media'
 
 const props = defineProps({
   item: { type: Object, required: true },
-  showTime: { type: Boolean, default: false }
+  index: { type: Number, default: 0 },
+  featured: { type: Boolean, default: false },
+  categoryName: { type: String, default: '' }
 })
 
 defineEmits(['open'])
 
 const broken = ref(false)
 const image = computed(() => (broken.value ? '' : resolveImage(props.item.image)))
-const time = computed(() => {
-  if (!props.showTime) return props.item.publishTime
-  return props.item.viewedAt || props.item.createdAt || props.item.publishTime
-})
+const time = computed(
+  () => props.item.viewedAt || props.item.createdAt || props.item.publishTime
+)
+const indexLabel = computed(() => String(props.index + 1).padStart(2, '0'))
 </script>
 
 <template>
-  <button type="button" class="news-card" @click="$emit('open', item)">
+  <button
+    type="button"
+    class="story stagger"
+    :class="{ featured }"
+    :style="{ '--i': Math.min(index, 8) }"
+    @click="$emit('open', item)"
+  >
+    <span v-if="!featured" class="index" aria-hidden="true">{{ indexLabel }}</span>
+
     <span class="body">
+      <span v-if="featured" class="kicker">{{ categoryName || 'LEAD STORY' }}</span>
+
       <span class="title">{{ item.title || '无标题' }}</span>
+
       <span v-if="item.description" class="desc">{{ item.description }}</span>
+
       <span class="meta">
-        <span v-if="item.author" class="author">{{ item.author }}</span>
-        <span v-if="item.author" class="dot">/</span>
+        <span v-if="item.author">{{ item.author }}</span>
+        <span v-if="item.author" class="sep">·</span>
         <span>{{ formatViews(item.views) }} 阅读</span>
         <template v-if="time">
-          <span class="dot">/</span>
+          <span class="sep">·</span>
           <span>{{ formatRelativeTime(time) }}</span>
         </template>
+      </span>
+
+      <span v-if="featured" class="read-more">
+        阅读全文
+        <span aria-hidden="true">→</span>
       </span>
     </span>
 
@@ -41,22 +60,36 @@ const time = computed(() => {
 </template>
 
 <style scoped>
-.news-card {
+.story {
   display: flex;
-  align-items: stretch;
-  gap: 14px;
+  align-items: flex-start;
+  gap: 12px;
   width: 100%;
-  padding: 18px 16px;
-  border: 1px solid var(--hairline);
-  border-radius: var(--radius);
-  background: var(--canvas-card);
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
   text-align: left;
-  transition: border-color 0.16s ease, background 0.16s ease;
+  transition: background 0.18s ease;
 }
 
-.news-card:active {
-  border-color: #303338;
-  background: #1d1e21;
+.story:active {
+  background: var(--red-soft);
+}
+
+.story.featured {
+  flex-direction: column;
+  gap: 0;
+  padding: 22px 0 24px;
+  border-bottom: 2px solid var(--ink);
+}
+
+.index {
+  flex: 0 0 24px;
+  padding-top: 3px;
+  color: var(--red);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
 }
 
 .body {
@@ -67,53 +100,87 @@ const time = computed(() => {
   min-width: 0;
 }
 
+.kicker {
+  margin-bottom: 2px;
+}
+
 .title {
   display: -webkit-box;
   overflow: hidden;
   color: var(--ink);
-  font-size: 17px;
-  font-weight: 400;
-  line-height: 1.45;
+  font-family: var(--font-serif);
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.32;
   letter-spacing: -0.012em;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
 }
 
+.featured .title {
+  font-size: clamp(27px, 8vw, 33px);
+  line-height: 1.16;
+  letter-spacing: -0.03em;
+  -webkit-line-clamp: 4;
+}
+
 .desc {
   display: -webkit-box;
   overflow: hidden;
-  color: var(--mute);
-  font-size: 12.5px;
-  line-height: 1.6;
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.65;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+}
+
+.featured .desc {
+  margin-top: 3px;
+  font-size: 14px;
+  line-height: 1.7;
+  -webkit-line-clamp: 3;
 }
 
 .meta {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  margin-top: 3px;
-  color: #666b73;
-  font-family: var(--font-mono);
-  font-size: 9.5px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
 }
 
-.author {
-  color: #9ca1a8;
+.sep {
+  padding: 0 6px;
+  color: #c4c4c8;
+}
+
+.read-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  color: var(--red);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
 }
 
 .thumb {
   flex: 0 0 auto;
-  align-self: center;
   width: 92px;
-  height: 70px;
+  height: 72px;
   overflow: hidden;
-  border: 1px solid var(--hairline);
-  border-radius: 6px;
-  background: var(--canvas-soft);
+  border: 1px solid var(--line);
+  background: var(--paper-warm);
+}
+
+.featured .thumb {
+  width: 100%;
+  height: 200px;
+  margin-top: 16px;
+  border-color: var(--line-strong);
 }
 
 .thumb img {
@@ -121,6 +188,5 @@ const time = computed(() => {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0.92;
 }
 </style>

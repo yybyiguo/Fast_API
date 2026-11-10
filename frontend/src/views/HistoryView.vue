@@ -108,7 +108,7 @@ async function doClear() {
 
 <template>
   <div class="page">
-    <AppHeader title="浏览历史">
+    <AppHeader title="历史">
       <button type="button" class="header-action" :disabled="!items.length" @click="askClear">
         清空
       </button>
@@ -122,6 +122,14 @@ async function doClear() {
         :dragging="dragging"
         :threshold="62"
       />
+
+      <div class="page-head">
+        <span class="kicker">READING HISTORY</span>
+        <div class="head-row">
+          <h1>浏览历史</h1>
+          <span class="count">{{ total }} 篇</span>
+        </div>
+      </div>
 
       <ListSkeleton v-if="loading && !items.length" :count="4" />
 
@@ -179,27 +187,55 @@ async function doClear() {
 </template>
 
 <style scoped>
+.scroll {
+  background: var(--white);
+}
+
 .header-action {
   height: 30px;
-  padding: 0 14px;
-  border: 1px solid var(--pill-border);
-  border-radius: var(--pill);
-  color: var(--ink);
+  padding: 0 10px;
+  border: 1px solid var(--red);
+  color: var(--red);
   background: transparent;
-  font-size: 11.5px;
-  letter-spacing: 0.02em;
+  font-size: 11px;
+  font-weight: 500;
 }
 
 .header-action:disabled {
-  border-color: var(--hairline);
-  color: #4d5158;
+  border-color: var(--line);
+  color: #9ca3af;
+}
+
+.page-head {
+  padding: 22px 16px 16px;
+  border-bottom: 1px solid var(--ink);
+}
+
+.head-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+h1 {
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.count {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-size: 11px;
 }
 
 .list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 14px 12px 0;
+  padding: 0 16px 8px;
 }
 
 .sentinel {

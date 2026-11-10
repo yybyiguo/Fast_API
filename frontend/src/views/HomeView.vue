@@ -53,23 +53,23 @@ async function refreshTop() {
 
 <template>
   <div class="page">
-    <header class="hero">
-      <div class="hero-top">
-        <span class="eyebrow">FEED · {{ today }}</span>
-
+    <header class="masthead">
+      <div class="topline">
+        <span class="date">{{ today }}</span>
+        <span class="edition">MORNING EDITION</span>
         <button
           type="button"
-          class="icon-btn"
+          class="refresh"
           aria-label="刷新当前分类"
           :disabled="refreshing || !activeCategory"
           @click="refreshTop"
         >
-          <svg :class="{ spin: refreshing }" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <svg :class="{ spin: refreshing }" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
             <path
               d="M20 11.5A8 8 0 1 0 18.4 16M20 5v5h-5"
               fill="none"
               stroke="currentColor"
-              stroke-width="1.5"
+              stroke-width="1.6"
               stroke-linecap="round"
               stroke-linejoin="round"
             />
@@ -79,28 +79,28 @@ async function refreshTop() {
 
       <div class="brand">
         <h1>今日资讯</h1>
-        <p>把信息流收束成一条线</p>
+        <p>DAILY BRIEFING · 把信息流收束成一条线</p>
       </div>
 
-      <div v-if="categories.length" class="cats no-scrollbar" role="tablist" aria-label="订阅源">
+      <nav v-if="categories.length" class="sections no-scrollbar" role="tablist" aria-label="订阅源">
         <button
           v-for="item in categories"
           :key="item.id"
           type="button"
           role="tab"
-          class="cat"
+          class="section"
           :class="{ active: item.id === activeCategory }"
           :aria-selected="item.id === activeCategory"
           @click="selectCategory(item.id)"
         >
           {{ item.name }}
         </button>
-      </div>
+      </nav>
 
-      <div v-else-if="catLoading" class="cats" aria-hidden="true">
+      <nav v-else-if="catLoading" class="sections" aria-hidden="true">
         <span class="chip-skeleton shimmer"></span>
         <span class="chip-skeleton short shimmer"></span>
-      </div>
+      </nav>
     </header>
 
     <NewsFeed
@@ -111,11 +111,11 @@ async function refreshTop() {
       :category-name="activeName"
     />
 
-    <div v-else-if="catLoading" class="scroll">
+    <div v-else-if="catLoading" class="scroll feed-loading">
       <ListSkeleton :count="4" />
     </div>
 
-    <div v-else-if="catError" class="scroll">
+    <div v-else-if="catError" class="scroll feed-loading">
       <EmptyState
         icon="error"
         title="分类加载失败"
@@ -125,7 +125,7 @@ async function refreshTop() {
       />
     </div>
 
-    <div v-else class="scroll">
+    <div v-else class="scroll feed-loading">
       <EmptyState
         icon="news"
         title="还没有订阅源"
@@ -136,89 +136,116 @@ async function refreshTop() {
 </template>
 
 <style scoped>
-.hero {
+.masthead {
   flex: 0 0 auto;
-  padding: calc(14px + var(--safe-top)) 16px 0;
-  background: var(--canvas);
+  padding: calc(8px + var(--safe-top)) 16px 0;
+  border-top: 3px solid var(--red);
+  background: var(--paper);
 }
 
-.hero-top {
+.topline {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
+  height: 30px;
+  color: var(--muted);
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
-.icon-btn {
+.date {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.edition {
+  flex: 0 0 auto;
+  color: #8a8f98;
+  font-size: 9px;
+}
+
+.refresh {
   display: grid;
   place-items: center;
   flex: 0 0 auto;
-  width: 36px;
-  height: 36px;
-  border: 1px solid var(--pill-border);
-  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--ink);
   color: var(--ink);
   background: transparent;
-  transition: background 0.16s ease;
+  transition: background 0.18s ease, color 0.18s ease;
 }
 
-.icon-btn:active {
-  background: rgba(255, 255, 255, 0.08);
+.refresh:active {
+  color: var(--white);
+  background: var(--ink);
 }
 
 .brand {
-  margin-top: 18px;
+  padding: 16px 0 12px;
+  text-align: center;
 }
 
 h1 {
   color: var(--ink);
-  font-size: clamp(34px, 10vw, 42px);
-  font-weight: 400;
-  line-height: 1.05;
-  letter-spacing: -0.045em;
+  font-family: var(--font-serif);
+  font-size: clamp(36px, 10.5vw, 44px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.03em;
 }
 
 .brand p {
   margin-top: 9px;
-  color: var(--mute);
-  font-size: 12.5px;
-  letter-spacing: 0.01em;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 
-.cats {
+.sections {
   display: flex;
-  gap: 8px;
-  margin-top: 20px;
-  padding-bottom: 14px;
+  gap: 0;
   overflow-x: auto;
-  border-bottom: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--ink);
 }
 
-.cat {
+.section {
+  position: relative;
   flex: 0 0 auto;
-  height: 32px;
-  padding: 0 14px;
-  border: 1px solid var(--pill-border);
-  border-radius: var(--pill);
-  color: var(--ink);
+  height: 43px;
+  padding: 0 15px;
+  color: var(--ink-soft);
   background: transparent;
-  font-size: 12.5px;
-  letter-spacing: 0.01em;
+  font-size: 13px;
   white-space: nowrap;
-  transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+  transition: color 0.18s ease;
 }
 
-.cat.active {
-  border-color: var(--ink);
-  color: var(--canvas);
-  background: var(--ink);
+.section:first-child {
+  padding-left: 0;
+}
+
+.section.active {
+  color: var(--red);
+  border-bottom: 2px solid var(--red);
+  font-weight: 500;
+}
+
+.section:active {
+  color: var(--red);
 }
 
 .chip-skeleton {
-  width: 62px;
-  height: 32px;
-  border-radius: var(--pill);
-  background: #17181b;
+  width: 64px;
+  height: 12px;
+  margin: 16px 12px 16px 0;
+  background: #ececef;
 }
 
 .chip-skeleton.short {
@@ -233,10 +260,14 @@ h1 {
 .shimmer::after {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
   content: '';
   transform: translateX(-100%);
   animation: sweep 1.5s infinite;
+}
+
+.feed-loading {
+  background: var(--white);
 }
 
 @keyframes sweep {

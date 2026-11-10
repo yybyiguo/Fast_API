@@ -205,8 +205,12 @@ onBeforeUnmount(() => clearTimeout(reloadTimer))
     </AppHeader>
 
     <div class="scroll">
-      <div class="section-head">
-        <span class="eyebrow no-dot">RSS SOURCES</span>
+      <div class="page-head">
+        <span class="kicker">RSS SOURCES</span>
+        <div class="head-row">
+          <h1>订阅源</h1>
+          <span class="count">{{ feeds.length }} 个</span>
+        </div>
       </div>
       <p class="hint">定时抓取 RSS；每个源会在首页生成一个同名分类，文章只在那个分类下展示。</p>
 
@@ -311,68 +315,92 @@ onBeforeUnmount(() => clearTimeout(reloadTimer))
 </template>
 
 <style scoped>
-.header-action {
-  height: 30px;
-  padding: 0 14px;
-  border: 1px solid var(--pill-border);
-  border-radius: var(--pill);
-  color: var(--ink);
-  background: transparent;
-  font-size: 11.5px;
-  letter-spacing: 0.02em;
-}
-
 .scroll {
+  background: var(--white);
   padding-bottom: calc(24px + var(--safe-bottom));
 }
 
-.section-head {
-  padding: 20px 16px 0;
+.header-action {
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--red);
+  color: var(--red);
+  background: transparent;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.page-head {
+  padding: 22px 16px 16px;
+  border-bottom: 1px solid var(--ink);
+}
+
+.head-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+h1 {
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.count {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-size: 11px;
 }
 
 .hint {
-  padding: 12px 16px 0;
-  color: var(--mute);
+  padding: 14px 16px 0;
+  color: var(--muted);
   font-size: 12px;
   line-height: 1.7;
 }
 
 .card {
-  margin: 16px 12px 0;
-  padding: 18px 16px;
-  border: 1px solid var(--hairline);
-  border-radius: var(--radius);
-  background: var(--canvas-card);
+  margin: 16px 16px 0;
+  padding: 20px 18px;
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--red);
+  background: var(--white);
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: 9px;
-  margin-bottom: 16px;
+  gap: 8px;
+  margin-bottom: 20px;
 }
 
 .field > span {
-  color: #666b73;
-  font-family: var(--font-mono);
+  color: var(--muted);
   font-size: 9px;
-  letter-spacing: 0.16em;
+  font-weight: 500;
+  letter-spacing: 0.14em;
 }
 
 .field input {
   width: 100%;
-  height: 46px;
-  padding: 0 14px;
-  border: 1px solid var(--hairline);
-  border-radius: 6px;
-  background: #151619;
+  height: 44px;
+  padding: 0 2px;
+  border: 0;
+  border-bottom: 1px solid #d4d4d8;
+  background: transparent;
   color: var(--ink);
   outline: none;
-  transition: border-color 0.16s ease;
+  transition: border-color 0.18s ease;
 }
 
 .field input:focus {
-  border-color: #3d4147;
+  border-bottom-color: var(--red);
 }
 
 .row {
@@ -382,33 +410,33 @@ onBeforeUnmount(() => clearTimeout(reloadTimer))
 }
 
 .primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   height: 46px;
-  margin-top: 4px;
-  border-radius: var(--pill);
-  color: var(--canvas);
-  background: var(--ink);
+  border: 1px solid var(--red);
+  color: var(--white);
+  background: var(--red);
   font-size: 13px;
+  font-weight: 500;
 }
 
 .primary:active:not(:disabled) {
-  background: var(--ink-dim);
+  background: var(--red-dark);
 }
 
 .list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
   margin: 0;
-  padding: 14px 12px 0;
+  padding: 0 16px;
   list-style: none;
 }
 
 .feed {
-  padding: 16px;
-  border: 1px solid var(--hairline);
-  border-radius: var(--radius);
-  background: var(--canvas-card);
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
 }
 
 .feed.off {
@@ -417,47 +445,49 @@ onBeforeUnmount(() => clearTimeout(reloadTimer))
 
 .feed-head {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
-  gap: 8px;
+  gap: 10px;
 }
 
 .name {
   overflow: hidden;
   color: var(--ink);
-  font-size: 16px;
+  font-family: var(--font-serif);
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .status {
   flex: 0 0 auto;
-  padding: 3px 9px;
-  border: 1px solid var(--hairline);
-  border-radius: var(--pill);
-  color: var(--mute);
-  font-family: var(--font-mono);
-  font-size: 8.5px;
+  font-size: 9px;
+  font-weight: 600;
   letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .status.ok {
-  border-color: var(--pill-border);
-  color: var(--ink);
+  color: var(--red);
 }
 
 .status.error {
-  border-color: rgba(255, 122, 23, 0.35);
-  color: var(--accent-soft);
+  color: var(--red-dark);
+}
+
+.status.idle,
+.status.off {
+  color: var(--muted);
 }
 
 .url {
-  margin-top: 8px;
+  margin-top: 6px;
   overflow: hidden;
-  color: #5f646c;
+  color: #9ca3af;
   font-family: var(--font-mono);
   font-size: 9.5px;
-  letter-spacing: 0.02em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -466,20 +496,18 @@ onBeforeUnmount(() => clearTimeout(reloadTimer))
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  margin-top: 10px;
-  color: #666b73;
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.08em;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 11px;
 }
 
 .error {
   margin-top: 10px;
   padding: 8px 10px;
-  border: 1px solid rgba(255, 122, 23, 0.28);
-  border-radius: 4px;
-  color: var(--accent-soft);
-  font-size: 11px;
+  border-left: 2px solid var(--red);
+  color: var(--red-dark);
+  background: var(--red-soft);
+  font-size: 11.5px;
   line-height: 1.6;
   word-break: break-word;
 }
@@ -492,20 +520,19 @@ onBeforeUnmount(() => clearTimeout(reloadTimer))
 
 .ops button {
   flex: 1;
-  height: 32px;
-  border: 1px solid var(--hairline);
-  border-radius: var(--pill);
+  height: 34px;
+  border: 1px solid var(--ink);
   color: var(--ink);
   background: transparent;
   font-size: 11.5px;
 }
 
 .ops button.danger {
-  border-color: rgba(255, 122, 23, 0.3);
-  color: var(--accent-soft);
+  border-color: var(--red);
+  color: var(--red);
 }
 
 .ops button:active:not(:disabled) {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--red-soft);
 }
 </style>

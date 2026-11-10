@@ -86,11 +86,19 @@ defineExpose({ refresh })
 
     <div v-else class="feed">
       <div class="feed-head">
-        <span class="label">LATEST</span>
-        <span class="count">{{ total }} ITEMS</span>
+        <span>FRONT PAGE</span>
+        <span>{{ total }} {{ total === 1 ? 'STORY' : 'STORIES' }}</span>
       </div>
 
-      <NewsCard v-for="item in items" :key="item.id" :item="item" @open="open" />
+      <NewsCard
+        v-for="(item, index) in items"
+        :key="item.id"
+        :item="item"
+        :index="index"
+        :featured="index === 0"
+        :category-name="categoryName"
+        @open="open"
+      />
 
       <ListFooter
         :has-more="hasMore"
@@ -107,27 +115,24 @@ defineExpose({ refresh })
 
 <style scoped>
 .feed-scroll {
-  background: var(--canvas);
+  background: var(--white);
 }
 
 .feed {
-  padding: 14px 12px 0;
+  padding: 0 16px;
 }
 
 .feed-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 4px 12px;
-  color: #5f646c;
-  font-family: var(--font-mono);
-  font-size: 9.5px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
-.feed :deep(.news-card + .news-card) {
-  margin-top: 10px;
+  padding: 13px 0 11px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
 }
 
 .sentinel {

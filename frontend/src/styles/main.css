@@ -1,53 +1,51 @@
 /* =========================================================
-   xAI-inspired design system
-   canvas / hairline / ink / pill / mono eyebrow
+   Editorial Grid / Magazine
+   paper · ink · breaking red · Newsreader / Roboto
    ========================================================= */
 :root {
-  --canvas: #0a0a0a;
-  --canvas-soft: #1a1c20;
-  --canvas-card: #191919;
-  --canvas-mid: #363a3f;
-  --hairline: #212327;
-  --ink: #ffffff;
-  --ink-dim: #dadbdf;
-  --body: #dadbdf;
-  --mute: #7d8187;
-  --pill-border: rgba(255, 255, 255, 0.22);
-  --accent: #ff7a17;
-  --accent-soft: #ffc285;
+  --paper: #fafafa;
+  --paper-warm: #f4f1ec;
+  --ink: #18181b;
+  --ink-soft: #3f3f46;
+  --muted: #5b6472;
+  --line: #e4e4e7;
+  --line-strong: #18181b;
+  --red: #dc2626;
+  --red-dark: #b91c1c;
+  --red-soft: #fef2f2;
+  --blue: #1e40af;
+  --white: #ffffff;
 
-  --radius: 8px;
-  --pill: 9999px;
-
-  --font-sans: 'Inter', 'Helvetica Neue', 'Segoe UI', 'PingFang SC',
-    'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-  --font-mono: 'Geist Mono', 'JetBrains Mono', 'Cascadia Mono', 'SFMono-Regular',
-    Consolas, 'Liberation Mono', monospace;
+  --radius: 2px;
+  --font-serif: 'Newsreader', 'Noto Serif SC', 'Songti SC', 'SimSun', Georgia, serif;
+  --font-sans: 'Roboto', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei',
+    'Helvetica Neue', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Cascadia Mono', 'SFMono-Regular', Consolas, monospace;
 
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --tabbar-h: 58px;
 
-  /* 兼容旧变量名：仍在使用 --c-* 的样式会自动跟随暗色体系 */
-  --c-bg: var(--canvas);
-  --c-card: var(--canvas-card);
+  /* 旧变量兼容，避免遗漏的样式掉色 */
+  --c-bg: var(--paper);
+  --c-card: var(--white);
   --c-ink: var(--ink);
-  --c-ink-2: var(--body);
-  --c-muted: var(--mute);
-  --c-line: var(--hairline);
-  --c-primary: var(--ink);
-  --c-primary-dark: var(--ink);
-  --c-primary-soft: rgba(255, 255, 255, 0.06);
-  --c-danger: var(--ink);
+  --c-ink-2: var(--ink-soft);
+  --c-muted: var(--muted);
+  --c-line: var(--line);
+  --c-primary: var(--red);
+  --c-primary-dark: var(--red-dark);
+  --c-primary-soft: var(--red-soft);
+  --c-danger: var(--red-dark);
   --c-success: var(--ink);
-  --radius-xl: 12px;
-  --radius-lg: 8px;
-  --radius-md: 8px;
-  --radius-sm: 6px;
+  --radius-xl: 4px;
+  --radius-lg: 2px;
+  --radius-md: 2px;
+  --radius-sm: 2px;
   --shadow-card: none;
   --shadow-float: none;
 
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 /* ===== 基础重置 ===== */
@@ -67,9 +65,9 @@ body {
   margin: 0;
   font-family: var(--font-sans);
   font-size: 15px;
-  line-height: 1.55;
+  line-height: 1.6;
   color: var(--ink);
-  background: var(--canvas);
+  background: var(--paper);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
@@ -83,17 +81,24 @@ h2,
 h3,
 p {
   margin: 0;
-  font-weight: 400;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
 }
 
 ::selection {
-  color: var(--canvas);
-  background: var(--ink);
+  color: var(--white);
+  background: var(--red);
 }
 
 button {
   font: inherit;
-  font-weight: 400;
   color: inherit;
   border: 0;
   background: none;
@@ -107,15 +112,14 @@ input,
 textarea {
   font: inherit;
   color: var(--ink);
-  caret-color: var(--ink);
+  caret-color: var(--red);
 }
 
 input::placeholder,
 textarea::placeholder {
-  color: #5f646c;
+  color: #9ca3af;
 }
 
-/* iOS 上字号小于 16px 会聚焦放大页面 */
 input,
 textarea,
 select {
@@ -123,18 +127,13 @@ select {
 }
 
 :focus-visible {
-  outline: 1px solid var(--ink);
-  outline-offset: 3px;
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
 }
 
 button:disabled {
   cursor: not-allowed;
-  opacity: 0.35;
-}
-
-b,
-strong {
-  font-weight: 400;
+  opacity: 0.45;
 }
 
 .no-scrollbar {
@@ -167,7 +166,7 @@ strong {
   height: 100dvh;
   margin: 0 auto;
   overflow: hidden;
-  background: var(--canvas);
+  background: var(--paper);
 }
 
 .view {
@@ -182,7 +181,7 @@ strong {
   flex: 1 1 auto;
   flex-direction: column;
   min-height: 0;
-  background: var(--canvas);
+  background: var(--paper);
 }
 
 .scroll {
@@ -193,7 +192,7 @@ strong {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
   scrollbar-width: thin;
-  scrollbar-color: #2a2d31 transparent;
+  scrollbar-color: #c9c9cf transparent;
 }
 
 .scroll::-webkit-scrollbar {
@@ -201,99 +200,71 @@ strong {
 }
 
 .scroll::-webkit-scrollbar-thumb {
-  border-radius: 99px;
-  background: #2a2d31;
+  background: #c9c9cf;
 }
 
-/* ===== 通用排版工具 ===== */
-.eyebrow {
+/* ===== 编辑排版工具 ===== */
+.kicker {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: var(--mute);
-  font-family: var(--font-mono);
+  color: var(--red);
+  font-family: var(--font-sans);
   font-size: 10px;
+  font-weight: 500;
   line-height: 1.4;
   letter-spacing: 0.16em;
   text-transform: uppercase;
 }
 
-.eyebrow::before {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--accent);
+.kicker::before {
+  width: 14px;
+  height: 2px;
+  background: var(--red);
   content: '';
 }
 
-.eyebrow.no-dot::before {
+.kicker.no-rule::before {
   display: none;
 }
 
-.display {
-  font-size: clamp(28px, 8vw, 40px);
-  font-weight: 400;
-  line-height: 1.1;
-  letter-spacing: -0.035em;
+.rule {
+  height: 1px;
+  background: var(--line);
 }
 
-.pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  height: 34px;
-  padding: 0 16px;
-  border: 1px solid var(--pill-border);
-  border-radius: var(--pill);
-  color: var(--ink);
-  background: transparent;
-  font-size: 12.5px;
-  letter-spacing: 0.01em;
-  white-space: nowrap;
-  transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+.rule-strong {
+  height: 2px;
+  background: var(--line-strong);
 }
 
-.pill:active {
-  background: rgba(255, 255, 255, 0.08);
+.story-index {
+  color: var(--red);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
 }
 
-.pill-solid {
-  border-color: var(--ink);
-  color: var(--canvas);
-  background: var(--ink);
+/* 列表入场：轻量 stagger，尊重 reduced-motion */
+@keyframes story-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
-.pill-solid:active {
-  background: var(--ink-dim);
-}
-
-.card {
-  border: 1px solid var(--hairline);
-  border-radius: var(--radius);
-  background: var(--canvas-card);
-}
-
-/* ===== 小工具 ===== */
-.dot {
-  padding: 0 6px;
-  color: #3c4046;
+.stagger {
+  animation: story-rise 0.38s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+  animation-delay: calc(var(--i, 0) * 45ms);
 }
 
 @keyframes spin {
   to {
     transform: rotate(360deg);
-  }
-}
-
-@keyframes fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
   }
 }
 
@@ -311,13 +282,13 @@ strong {
   }
 }
 
-/* 宽屏：收成手机列，用 hairline 标出边界，不加阴影 */
+/* 宽屏：报纸栏宽 */
 @media (min-width: 600px) {
   body {
-    background: #050505;
+    background: #efece7;
   }
   .app {
-    border-right: 1px solid var(--hairline);
-    border-left: 1px solid var(--hairline);
+    border-right: 1px solid var(--line);
+    border-left: 1px solid var(--line);
   }
 }
