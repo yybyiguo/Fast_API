@@ -70,4 +70,14 @@ const { toast } = useToast()
   opacity: 0;
   transform: translateY(8px);
 }
+
+@media (min-width: 960px) {
+  .toast-layer {
+    right: 28px;
+    bottom: 88px;
+    left: auto;
+    justify-content: flex-end;
+    padding: 0;
+  }
+}
 </style>

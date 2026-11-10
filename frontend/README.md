@@ -1,6 +1,6 @@
 # 今日资讯 · 响应式前端
 
-基于 **Vue 3 + Vite + Vue Router** 的移动端优先、桌面端适配的资讯阅读应用，对接 `backend/main.py` 提供的 FastAPI 接口（news / user / favorite / history）。后端代码未做任何修改。
+基于 **Vue 3 + Vite + Vue Router** 的移动端优先、桌面端适配的资讯阅读应用，对接 `backend/main.py` 提供的 FastAPI 接口（news / user / favorite / history）。订阅源编辑使用后端 PATCH 扩展。
 
 ## 功能
 
@@ -8,7 +8,7 @@
 - **资讯详情**：浏览量自增、正文分段、相关推荐、收藏切换、进入详情自动记录浏览历史
 - **登录 / 注册**：Bearer Token，`localStorage` 持久化，启动时自动校验，401 自动清理登录态；登录后回到原页面
 - **我的**：资料展示与编辑（昵称 / 简介 / 性别）、收藏与浏览记录在同一页内切换（不跳页、不弹窗）、单条删除、行内二次清空、退出登录
-- **订阅源**：作为底部一级入口，管理 RSS 源；非管理员显示无权限提示
+- **订阅源**：作为底部一级入口，支持新增、编辑（名称 / Feed 地址 / 抓取间隔）、停用、立即抓取和删除；非管理员显示无权限提示
 - **移动端适配**：安全区、`100dvh`、底部 TabBar（首页 / 订阅源 / 我的）、下拉刷新、点击反馈、输入框防 iOS 缩放、`IntersectionObserver` 触底加载
 - **桌面端适配**：≥960px 切换为左侧编辑式导航，底部 TabBar 自动隐藏，页面整屏铺满；≥1200px 首页双栏报纸流，≥1800px 升为三栏；详情与「我的」使用宽幅阅读栏
 
@@ -35,6 +35,10 @@
 | ![桌面首页](screenshots/desktop-home.png) | ![桌面详情](screenshots/desktop-detail.png) | ![桌面我的](screenshots/desktop-profile.png) |
 
 > 桌面截图均为 1440 × 900 视口：整屏铺满，左侧固定导航 + 右侧内容区；首页双栏，超宽屏三栏。
+
+### 订阅源编辑
+
+![订阅源编辑](screenshots/rss-edit.png)
 
 ## 快速开始
 

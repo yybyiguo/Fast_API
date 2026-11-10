@@ -1,5 +1,5 @@
 <script setup>
-import { onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
 import EmptyState from '../components/EmptyState.vue'
@@ -20,12 +20,61 @@ const loading = ref(true)
 const denied = ref(false)
 const loadError = ref('')
 const formOpen = ref(false)
+const editingId = ref(0)
+const formEl = ref(null)
 const submitting = ref(false)
 const refreshingId = ref(0)
 const togglingId = ref(0)
 const confirmState = reactive({ open: false, feed: null, busy: false })
 
 const form = reactive({ name: '', url: '', fetchInterval: 900 })
+
+const submitLabel = computed(() => {
+  if (submitting.value) return editingId.value ? '保存中…' : '添加中…'
+  return editingId.value ? '保存修改' : '添加订阅源'
+})
+
+function resetForm() {
+  form.name = ''
+  form.url = ''
+  form.fetchInterval = 900
+}
+
+function scrollToForm() {
+  nextTick(() => {
+    formEl.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  })
+}
+
+function openCreate() {
+  editingId.value = 0
+  resetForm()
+  formOpen.value = true
+  scrollToForm()
+}
+
+function openEdit(feed) {
+  editingId.value = feed.id
+  form.name = feed.name
+  form.url = feed.url
+  form.fetchInterval = feed.fetchInterval
+  formOpen.value = true
+  scrollToForm()
+}
+
+function closeForm() {
+  formOpen.value = false
+  editingId.value = 0
+  resetForm()
+}
+
+function toggleForm() {
+  if (formOpen.value) {
+    closeForm()
+  } else {
+    openCreate()
+  }
+}
 
 let reloadTimer = 0
 
@@ -99,6 +148,7 @@ async function submit() {
 
   const name = form.name.trim()
   const url = form.url.trim()
+  const interval = Number(form.fetchInterval)
   if (!name) {
     toast.error('给这个源起个名字')
     return
@@ -107,19 +157,23 @@ async function submit() {
     toast.error('地址要以 http:// 或 https:// 开头，或以 / 开头的 RSSHub 路径')
     return
   }
+  if (!Number.isFinite(interval) || interval < 300 || interval > 86400) {
+    toast.error('抓取间隔需在 300–86400 秒之间')
+    return
+  }
 
+  const editing = editingId.value > 0
   submitting.value = true
   try {
-    await rssApi.create({
-      name,
-      url,
-      fetchInterval: form.fetchInterval
-    })
-    toast.success('已添加，首页会自动生成同名分类')
-    form.name = ''
-    form.url = ''
-    formOpen.value = false
-    // 新源会建一个同名分类，刷新全局分类，回到首页就能看到新 tab
+    if (editing) {
+      await rssApi.update(editingId.value, { name, url, fetchInterval: interval })
+      toast.success('已保存修改')
+    } else {
+      await rssApi.create({ name, url, fetchInterval: interval })
+      toast.success('已添加，首页会自动生成同名分类')
+    }
+    closeForm()
+    // 改名会同步分类名；新源会建同名分类，都要刷新首页 tab
     await loadCategories(true).catch(() => {})
     await load()
   } catch (error) {
@@ -176,6 +230,7 @@ async function doRemove() {
   try {
     await rssApi.remove(target.id)
     feeds.value = feeds.value.filter((item) => item.id !== target.id)
+    if (editingId.value === target.id) closeForm()
     confirmState.open = false
     confirmState.feed = null
     // 空分类可能被后端一并删掉，刷新首页 tab
@@ -200,7 +255,7 @@ onBeforeUnmount(() => clearTimeout(reloadTimer))
     <header class="page-head">
       <div class="head-top">
         <span class="kicker no-rule">RSS SOURCES</span>
-        <button v-if="!denied" type="button" class="header-action" @click="formOpen = !formOpen">
+        <button v-if="!denied" type="button" class="header-action" @click="toggleForm">
           {{ formOpen ? '收起' : '添加' }}
         </button>
       </div>
@@ -213,7 +268,15 @@ onBeforeUnmount(() => clearTimeout(reloadTimer))
     <div class="scroll">
       <p class="hint">定时抓取 RSS；每个源会在首页生成一个同名分类，文章只在那个分类下展示。</p>
 
-      <form v-if="formOpen" class="card form" @submit.prevent="submit">
+      <form v-if="formOpen" ref="formEl" class="card form" @submit.prevent="submit">
+        <div class="form-head">
+          <div>
+            <span class="kicker no-rule">{{ editingId ? 'EDIT SOURCE' : 'NEW SOURCE' }}</span>
+            <h2>{{ editingId ? '编辑订阅源' : '添加订阅源' }}</h2>
+          </div>
+          <button type="button" class="cancel" @click="closeForm">取消</button>
+        </div>
+
         <label class="field">
           <span>名称</span>
           <input v-model="form.name" type="text" maxlength="100" placeholder="例如：少数派" />
@@ -232,11 +295,15 @@ onBeforeUnmount(() => clearTimeout(reloadTimer))
 
         <label class="field">
           <span>抓取间隔（秒）</span>
-          <input v-model.number="form.fetchInterval" type="number" min="300" step="60" />
+          <input v-model.number="form.fetchInterval" type="number" min="300" max="86400" step="60" />
         </label>
 
+        <p v-if="editingId" class="form-note">
+          修改 Feed 地址后，下一次抓取会使用新地址；已经抓到的文章会保留。
+        </p>
+
         <button type="submit" class="primary" :disabled="submitting">
-          {{ submitting ? '添加中…' : '添加订阅源' }}
+          {{ submitLabel }}
         </button>
       </form>
 
@@ -266,7 +333,7 @@ onBeforeUnmount(() => clearTimeout(reloadTimer))
         title="还没有订阅源"
         description="添加一个 RSS 地址，首页会以源名称生成一个分类并展示抓取到的文章。"
         action-text="添加第一个源"
-        @action="formOpen = true"
+        @action="openCreate"
       />
 
       <ul v-else class="list">
@@ -295,6 +362,7 @@ onBeforeUnmount(() => clearTimeout(reloadTimer))
             <button type="button" :disabled="togglingId === feed.id" @click="toggle(feed)">
               {{ feed.enabled ? '停用' : '启用' }}
             </button>
+            <button type="button" @click="openEdit(feed)">编辑</button>
             <button type="button" class="danger" @click="askRemove(feed)">删除</button>
           </div>
         </li>
@@ -380,6 +448,49 @@ h1 {
   border: 1px solid var(--line);
   border-top: 3px solid var(--red);
   background: var(--white);
+}
+
+.form-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.form-head h2 {
+  margin-top: 8px;
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+
+.cancel {
+  flex: 0 0 auto;
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  background: transparent;
+  font-size: 10.5px;
+}
+
+.cancel:active {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.form-note {
+  margin: 0 0 16px;
+  padding: 8px 10px;
+  border-left: 2px solid var(--red);
+  color: var(--ink-soft);
+  background: var(--red-soft);
+  font-size: 11px;
+  line-height: 1.65;
 }
 
 .field {
@@ -543,6 +654,13 @@ h1 {
 
 .ops button:active:not(:disabled) {
   background: var(--red-soft);
+}
+
+@media (max-width: 380px) {
+  .ops {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 @media (min-width: 960px) {

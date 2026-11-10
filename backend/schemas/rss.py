@@ -16,6 +16,7 @@ class RssFeedIn(BaseModel):
 
 class RssFeedPatch(BaseModel):
     name: str | None = Field(None, max_length=100)
+    url: str | None = Field(None, max_length=500)
     category_id: int | None = Field(None, alias="categoryId")
     fetch_interval: int | None = Field(None, ge=300, le=86400, alias="fetchInterval")
     enabled: bool | None = None

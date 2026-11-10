@@ -63,6 +63,14 @@ async def update_feed(db: AsyncSession, feed: RssFeed, data: RssFeedPatch) -> Rs
         if category is not None:
             category.name = await _category_name(db, feed.name, exclude_id=category.id)
 
+    # 换了地址就当作新源，清空旧地址的抓取状态，等待下一次抓取
+    if "url" in values:
+        feed.site_url = None
+        feed.last_fetch_at = None
+        feed.last_status = None
+        feed.last_error = ""
+        feed.error_count = 0
+
     await db.flush()
     return feed
 

@@ -93,6 +93,8 @@ async def update_feed(
     feed = await rss.get_feed(db, feed_id)
     if feed is None:
         raise HTTPException(status_code=404, detail="源不存在")
+    if data.url is not None:
+        data.url = await _check_url(data.url)
     try:
         # update_feed 内部会 flush，外键错误在这里就会抛，不能等到 commit
         feed = await rss.update_feed(db, feed, data)
@@ -104,6 +106,8 @@ async def update_feed(
         # 外键错误优先判：它的信息里也包含 news_categories
         if "FOREIGN KEY" in message:
             raise HTTPException(status_code=422, detail="分类不存在") from exc
+        if "url" in message:
+            raise HTTPException(status_code=409, detail="该 Feed URL 已存在") from exc
         if "news_categories" in message:
             raise HTTPException(status_code=409, detail="源名称已被占用") from exc
         raise HTTPException(status_code=422, detail="分类不存在") from exc
