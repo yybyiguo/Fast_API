@@ -57,8 +57,10 @@ function isActive(to) {
   height: 100%;
   padding: 24px 20px 20px;
   border-top: 3px solid var(--red);
-  border-right: 1px solid var(--ink);
-  background: var(--paper);
+  border-right: 1px solid var(--line);
+  background:
+    radial-gradient(120% 60% at 50% -10%, rgba(254, 44, 85, 0.14), transparent 60%),
+    #0c0c13;
 }
 
 .brand {

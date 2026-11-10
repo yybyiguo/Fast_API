@@ -512,7 +512,7 @@ h1 {
   height: 44px;
   padding: 0 2px;
   border: 0;
-  border-bottom: 1px solid #d4d4d8;
+  border-bottom: 1px solid var(--line-strong);
   background: transparent;
   color: var(--ink);
   outline: none;
@@ -536,7 +536,7 @@ h1 {
   width: 100%;
   height: 46px;
   border: 1px solid var(--red);
-  color: var(--white);
+  color: #fff;
   background: var(--red);
   font-size: 13px;
   font-weight: 500;
@@ -690,5 +690,61 @@ h1 {
   .list {
     padding: 0 40px;
   }
+}
+
+/* Short-video skin */
+.page-head {
+  border-top: 3px solid var(--red);
+  border-bottom-color: var(--line);
+  background:
+    radial-gradient(120% 90% at 50% -20%, rgba(254, 44, 85, 0.16), transparent 62%),
+    var(--paper);
+}
+
+.scroll {
+  background: var(--paper);
+}
+
+.header-action {
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.card {
+  border-color: var(--line);
+  border-radius: 0 0 20px 20px;
+  background: var(--surface);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.3);
+}
+
+.primary {
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.list {
+  gap: 12px;
+}
+
+.feed {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+}
+
+.ops button {
+  border-color: var(--line);
+  border-radius: 10px;
+  color: var(--ink-soft);
+}
+
+.ops button.danger {
+  border-color: rgba(254, 44, 85, 0.45);
+  color: var(--red);
+}
+
+.status.ok {
+  color: var(--cyan);
 }
 </style>

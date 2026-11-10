@@ -47,7 +47,8 @@ function goBack() {
   height: calc(52px + var(--safe-top));
   padding: var(--safe-top) 14px 0;
   border-bottom: 1px solid var(--line);
-  background: var(--white);
+  background: rgba(10, 10, 16, 0.86);
+  backdrop-filter: blur(18px) saturate(150%);
 }
 
 .back,
@@ -60,15 +61,16 @@ function goBack() {
 .back {
   display: grid;
   place-items: center;
-  border: 1px solid var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 11px;
   color: var(--ink);
-  background: transparent;
+  background: rgba(255, 255, 255, 0.04);
   transition: background 0.18s ease, color 0.18s ease;
 }
 
 .back:active {
-  color: var(--white);
-  background: var(--ink);
+  color: #fff;
+  background: var(--red);
 }
 
 h1 {
@@ -77,7 +79,7 @@ h1 {
   color: var(--ink);
   font-family: var(--font-serif);
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: -0.01em;
   text-align: center;
   text-overflow: ellipsis;

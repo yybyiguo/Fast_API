@@ -181,7 +181,7 @@ async function refreshTop() {
 }
 
 .refresh:active {
-  color: var(--white);
+  color: #fff;
   background: var(--ink);
 }
 
@@ -267,7 +267,7 @@ h1 {
 }
 
 .feed-loading {
-  background: var(--white);
+  background: var(--paper);
 }
 
 @keyframes sweep {
@@ -276,35 +276,126 @@ h1 {
   }
 }
 
+/* Short-video feed skin */
+.masthead {
+  padding: calc(8px + var(--safe-top)) 14px 0;
+  border-top: 0;
+  background:
+    radial-gradient(120% 80% at 50% -20%, rgba(254, 44, 85, 0.2), transparent 60%),
+    var(--paper);
+}
+
+.topline {
+  height: 28px;
+  color: var(--muted);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+}
+
+.edition {
+  color: var(--cyan);
+  font-size: 8.5px;
+}
+
+.refresh {
+  width: 32px;
+  height: 32px;
+  border-color: var(--line);
+  border-radius: 50%;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.brand {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 0 12px;
+}
+
+.brand h1 {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+}
+
+.brand p {
+  display: none;
+}
+
+.sections {
+  gap: 8px;
+  padding: 2px 0 12px;
+  border-bottom: 0;
+}
+
+.section {
+  height: 34px;
+  padding: 0 15px;
+  border: 0;
+  border-radius: 999px;
+  color: var(--ink-soft);
+  background: var(--surface);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.section:first-child {
+  padding-left: 15px;
+}
+
+.section.active {
+  border: 0;
+  color: #fff;
+  background: var(--red);
+  box-shadow: 0 8px 20px rgba(254, 44, 85, 0.35);
+}
+
+.section:active {
+  color: var(--red);
+  background: var(--surface-2);
+}
+
+.chip-skeleton {
+  height: 34px;
+  margin: 0 8px 12px 0;
+  border-radius: 999px;
+  background: #1c1c26;
+}
+
+.shimmer::after {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+}
+
 @media (min-width: 960px) {
   .masthead {
-    padding: 18px 40px 0;
-    border-top-width: 4px;
+    padding: 14px 40px 0;
   }
 
   .topline {
-    height: 34px;
-    font-size: 10.5px;
+    height: 30px;
+    font-size: 9.5px;
   }
 
   .brand {
-    padding: 26px 0 20px;
+    padding: 12px 0 14px;
   }
 
-  h1 {
-    font-size: 64px;
-    letter-spacing: -0.045em;
+  .brand h1 {
+    font-size: 34px;
   }
 
   .brand p {
-    font-size: 10px;
-    letter-spacing: 0.2em;
+    display: block;
+    color: var(--muted);
+    font-size: 9px;
+    letter-spacing: 0.16em;
   }
 
   .section {
-    height: 48px;
-    padding: 0 20px;
-    font-size: 14px;
+    height: 36px;
+    font-size: 13px;
   }
 }
 </style>

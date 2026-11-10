@@ -1,30 +1,33 @@
 /* =========================================================
-   Editorial Grid / Magazine
-   paper · ink · breaking red · Newsreader / Roboto
+   After Dark / Short-video feed
+   ink black · douyin red · cyan accent · bold sans
    ========================================================= */
 :root {
-  --paper: #fafafa;
-  --paper-warm: #f4f1ec;
-  --ink: #18181b;
-  --ink-soft: #3f3f46;
-  --muted: #5b6472;
-  --line: #e4e4e7;
-  --line-strong: #18181b;
-  --red: #dc2626;
-  --red-dark: #b91c1c;
-  --red-soft: #fef2f2;
-  --blue: #1e40af;
-  --white: #ffffff;
+  --paper: #08080c;
+  --paper-warm: #171720;
+  --white: #12121a;
+  --surface: #17171f;
+  --surface-2: #1e1e29;
+  --ink: #f5f5f8;
+  --ink-soft: #c9c9d4;
+  --muted: #8b8b9a;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.18);
+  --red: #fe2c55;
+  --red-dark: #e11d48;
+  --red-soft: rgba(254, 44, 85, 0.14);
+  --blue: #25f4ee;
+  --cyan: #25f4ee;
 
-  --radius: 2px;
-  --font-serif: 'Newsreader', 'Noto Serif SC', 'Songti SC', 'SimSun', Georgia, serif;
-  --font-sans: 'Roboto', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei',
-    'Helvetica Neue', sans-serif;
+  --radius: 18px;
+  --font-serif: 'Inter', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-sans: 'Inter', 'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', 'Helvetica Neue', sans-serif;
   --font-mono: 'JetBrains Mono', 'Cascadia Mono', 'SFMono-Regular', Consolas, monospace;
 
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --tabbar-h: 58px;
+  --tabbar-h: 62px;
 
   /* 旧变量兼容，避免遗漏的样式掉色 */
   --c-bg: var(--paper);
@@ -37,15 +40,15 @@
   --c-primary-dark: var(--red-dark);
   --c-primary-soft: var(--red-soft);
   --c-danger: var(--red-dark);
-  --c-success: var(--ink);
-  --radius-xl: 4px;
-  --radius-lg: 2px;
-  --radius-md: 2px;
-  --radius-sm: 2px;
-  --shadow-card: none;
-  --shadow-float: none;
+  --c-success: var(--cyan);
+  --radius-xl: 24px;
+  --radius-lg: 18px;
+  --radius-md: 14px;
+  --radius-sm: 10px;
+  --shadow-card: 0 18px 40px rgba(0, 0, 0, 0.35);
+  --shadow-float: 0 12px 30px rgba(0, 0, 0, 0.5);
 
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 /* ===== 基础重置 ===== */
@@ -285,7 +288,7 @@ button:disabled {
 /* 宽屏：报纸栏宽 */
 @media (min-width: 600px) {
   body {
-    background: #efece7;
+    background: var(--paper);
   }
   .app {
     border-right: 1px solid var(--line);

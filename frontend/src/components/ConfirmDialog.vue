@@ -114,13 +114,13 @@ p {
 }
 
 .ghost:active:not(:disabled) {
-  color: var(--white);
+  color: #fff;
   background: var(--ink);
 }
 
 .solid {
   border: 1px solid var(--red);
-  color: var(--white);
+  color: #fff;
   background: var(--red);
 }
 

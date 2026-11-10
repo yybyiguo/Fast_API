@@ -368,7 +368,7 @@ function doLogout() {
 
       <section class="panel">
         <div class="panel-head">
-          <span class="panel-label">{{ isFavorites ? 'SAVED STORIES' : 'READING HISTORY' }}</span>
+          <span class="panel-label">{{ isFavorites ? '我的收藏' : '浏览记录' }}</span>
           <div class="panel-actions">
             <span class="panel-count">{{ listTotal }} 篇</span>
             <button
@@ -525,8 +525,10 @@ function doLogout() {
   flex: 0 0 auto;
   padding: calc(12px + var(--safe-top)) 16px 22px;
   border-top: 3px solid var(--red);
-  border-bottom: 1px solid var(--ink);
-  background: var(--paper);
+  border-bottom: 1px solid var(--line);
+  background:
+    radial-gradient(120% 80% at 50% -20%, rgba(254, 44, 85, 0.16), transparent 62%),
+    var(--paper);
 }
 
 .head-top {
@@ -538,18 +540,19 @@ function doLogout() {
 
 .edit-btn {
   height: 30px;
-  padding: 0 12px;
-  border: 1px solid var(--ink);
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
   color: var(--ink);
-  background: transparent;
+  background: rgba(255, 255, 255, 0.04);
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 600;
   transition: background 0.18s ease, color 0.18s ease;
 }
 
 .edit-btn:active {
-  color: var(--white);
-  background: var(--ink);
+  color: #fff;
+  background: var(--red);
 }
 
 .guest,
@@ -570,12 +573,14 @@ function doLogout() {
   width: 64px;
   height: 64px;
   overflow: hidden;
-  border: 1px solid var(--ink);
+  border: 2px solid rgba(254, 44, 85, 0.7);
+  border-radius: 50%;
   color: var(--ink);
-  background: var(--paper-warm);
+  background: var(--surface-2);
+  box-shadow: 0 0 0 4px rgba(254, 44, 85, 0.12);
   font-family: var(--font-serif);
   font-size: 26px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .avatar img {
@@ -587,7 +592,9 @@ function doLogout() {
 .guest-avatar {
   width: 56px;
   height: 56px;
+  border-color: var(--line);
   color: var(--muted);
+  box-shadow: none;
   font-family: var(--font-mono);
   font-size: 18px;
 }
@@ -616,7 +623,7 @@ function doLogout() {
   margin-top: 22px;
   padding: 0 20px;
   border: 1px solid var(--red);
-  color: var(--white);
+  color: #fff;
   background: var(--red);
   font-size: 12.5px;
   font-weight: 500;
@@ -669,7 +676,7 @@ function doLogout() {
 }
 
 .scroll {
-  background: var(--white);
+  background: var(--paper);
   padding-bottom: calc(24px + var(--safe-bottom));
 }
 
@@ -678,8 +685,8 @@ function doLogout() {
   top: 0;
   z-index: 2;
   display: flex;
-  background: var(--white);
-  border-bottom: 1px solid var(--ink);
+  background: var(--paper);
+  border-bottom: 1px solid var(--line);
 }
 
 .tab {
@@ -725,7 +732,7 @@ function doLogout() {
 }
 
 .panel {
-  background: var(--white);
+  background: var(--paper);
 }
 
 .panel-head {
@@ -766,7 +773,7 @@ function doLogout() {
 }
 
 .clear.confirm {
-  color: var(--white);
+  color: #fff;
   background: var(--red);
 }
 
@@ -796,14 +803,15 @@ function doLogout() {
   width: 100%;
   height: 44px;
   border: 1px solid var(--red);
+  border-radius: 12px;
   color: var(--red);
   background: transparent;
   font-size: 12.5px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .logout:active {
-  color: var(--white);
+  color: #fff;
   background: var(--red);
 }
 
@@ -870,7 +878,7 @@ function doLogout() {
 }
 
 .close:active {
-  color: var(--white);
+  color: #fff;
   background: var(--ink);
 }
 
@@ -894,7 +902,7 @@ function doLogout() {
   width: 100%;
   padding: 10px 2px;
   border: 0;
-  border-bottom: 1px solid #d4d4d8;
+  border-bottom: 1px solid var(--line-strong);
   background: transparent;
   color: var(--ink);
   outline: none;
@@ -937,7 +945,7 @@ function doLogout() {
 
 .segmented button.active {
   border-color: var(--red);
-  color: var(--white);
+  color: #fff;
   background: var(--red);
 }
 
@@ -950,7 +958,7 @@ function doLogout() {
   margin-top: 10px;
   padding: 0 18px;
   border: 1px solid var(--red);
-  color: var(--white);
+  color: #fff;
   background: var(--red);
   font-size: 13.5px;
   font-weight: 500;

@@ -86,8 +86,8 @@ defineExpose({ refresh })
 
     <div v-else class="feed">
       <div class="feed-head">
-        <span>FRONT PAGE</span>
-        <span>{{ total }} {{ total === 1 ? 'STORY' : 'STORIES' }}</span>
+        <span class="feed-label"><i class="live-dot" aria-hidden="true"></i>推荐</span>
+        <span>{{ total }} 条</span>
       </div>
 
       <NewsCard
@@ -115,24 +115,44 @@ defineExpose({ refresh })
 
 <style scoped>
 .feed-scroll {
-  background: var(--white);
+  padding-bottom: calc(14px + var(--safe-bottom));
+  background: var(--paper);
 }
 
 .feed {
-  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 10px 14px 0;
 }
 
 .feed-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 13px 0 11px;
-  border-bottom: 1px solid var(--line);
+  padding: 2px 2px 0;
   color: var(--muted);
-  font-family: var(--font-sans);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.04em;
+}
+
+.feed-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--red);
+  box-shadow: 0 0 0 4px rgba(254, 44, 85, 0.16);
 }
 
 .sentinel {
@@ -143,16 +163,13 @@ defineExpose({ refresh })
   .feed {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    column-gap: 40px;
-    max-width: none;
-    margin: 0;
-    padding: 0 40px;
+    gap: 22px;
+    padding: 18px 40px 8px;
   }
 
   .feed-head {
     grid-column: 1 / -1;
-    padding: 18px 0 14px;
-    font-size: 10.5px;
+    padding: 0 2px 2px;
   }
 
   .feed :deep(.story.featured) {

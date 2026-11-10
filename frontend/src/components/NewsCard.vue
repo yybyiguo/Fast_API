@@ -24,21 +24,32 @@ const indexLabel = computed(() => String(props.index + 1).padStart(2, '0'))
   <button
     type="button"
     class="story stagger"
-    :class="{ featured }"
+    :class="[{ featured }, `tone-${index % 3}`]"
     :style="{ '--i': Math.min(index, 8) }"
     @click="$emit('open', item)"
   >
-    <span v-if="!featured" class="index" aria-hidden="true">{{ indexLabel }}</span>
+    <span class="media">
+      <img v-if="image" :src="image" alt="" loading="lazy" @error="broken = true" />
+
+      <span v-else class="fallback" aria-hidden="true">
+        <span class="fallback-index">{{ indexLabel }}</span>
+      </span>
+
+      <span class="shade" aria-hidden="true"></span>
+      <span v-if="featured" class="badge">头条</span>
+      <span v-else class="index" aria-hidden="true">{{ indexLabel }}</span>
+
+      <span class="hero-copy" :class="{ 'hero-copy--small': !featured }">
+        <span class="hero-cat">{{ categoryName || '推荐' }}</span>
+        <span class="hero-title">{{ item.title || '无标题' }}</span>
+      </span>
+    </span>
 
     <span class="body">
-      <span v-if="featured" class="kicker">{{ categoryName || 'LEAD STORY' }}</span>
-
-      <span class="title">{{ item.title || '无标题' }}</span>
-
       <span v-if="item.description" class="desc">{{ item.description }}</span>
 
       <span class="meta">
-        <span v-if="item.author">{{ item.author }}</span>
+        <span v-if="item.author" class="author">{{ item.author }}</span>
         <span v-if="item.author" class="sep">·</span>
         <span>{{ formatViews(item.views) }} 阅读</span>
         <template v-if="time">
@@ -52,90 +63,231 @@ const indexLabel = computed(() => String(props.index + 1).padStart(2, '0'))
         <span aria-hidden="true">→</span>
       </span>
     </span>
-
-    <span v-if="image" class="thumb">
-      <img :src="image" alt="" loading="lazy" @error="broken = true" />
-    </span>
   </button>
 </template>
 
 <style scoped>
 .story {
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
+  flex-direction: column;
   width: 100%;
-  padding: 18px 0;
-  border-bottom: 1px solid var(--line);
-  background: transparent;
+  padding: 7px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--surface);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.28);
   text-align: left;
-  transition: background 0.18s ease;
+  transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
 .story:active {
-  background: var(--red-soft);
+  border-color: rgba(254, 44, 85, 0.45);
+  transform: scale(0.985);
 }
 
-.story.featured {
+.media {
+  position: relative;
+  flex: 0 0 auto;
+  width: 100%;
+  height: 172px;
+  overflow: hidden;
+  border-radius: 17px;
+  background: #1b1b26;
+}
+
+.featured .media {
+  height: 280px;
+  border-radius: 18px;
+}
+
+.media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.45s ease;
+}
+
+.shade {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.05) 35%, rgba(0, 0, 0, 0.78));
+  pointer-events: none;
+}
+
+.hero-copy {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  left: 16px;
+  z-index: 3;
+  display: flex;
   flex-direction: column;
-  gap: 0;
-  padding: 22px 0 24px;
-  border-bottom: 2px solid var(--ink);
+  gap: 8px;
+}
+
+.hero-cat {
+  color: var(--cyan);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.hero-title {
+  display: -webkit-box;
+  overflow: hidden;
+  color: #fff;
+  font-size: clamp(23px, 7vw, 28px);
+  font-weight: 800;
+  line-height: 1.24;
+  letter-spacing: -0.03em;
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.55);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+}
+
+.fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 16px;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(254, 44, 85, 0.55), transparent 48%),
+    radial-gradient(circle at 82% 82%, rgba(37, 244, 238, 0.24), transparent 52%),
+    linear-gradient(135deg, #1d1d29, #0d0d14);
+}
+
+.tone-1 .fallback {
+  background:
+    radial-gradient(circle at 82% 20%, rgba(254, 44, 85, 0.45), transparent 45%),
+    radial-gradient(circle at 15% 80%, rgba(37, 244, 238, 0.3), transparent 48%),
+    linear-gradient(135deg, #151d27, #0b0c12);
+}
+
+.tone-2 .fallback {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(37, 244, 238, 0.24), transparent 45%),
+    radial-gradient(circle at 90% 90%, rgba(254, 44, 85, 0.4), transparent 50%),
+    linear-gradient(160deg, #1a1620, #0b0b10);
+}
+
+.hero-copy--small {
+  right: 12px;
+  bottom: 12px;
+  left: 12px;
+  gap: 5px;
+}
+
+.hero-copy--small .hero-title {
+  font-size: 17px;
+  line-height: 1.35;
+  letter-spacing: -0.015em;
+  -webkit-line-clamp: 2;
+}
+
+.hero-copy--small .hero-cat {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+}
+
+.fallback-index {
+  position: absolute;
+  right: 10px;
+  bottom: -6px;
+  color: rgba(255, 255, 255, 0.1);
+  font-size: 92px;
+  font-weight: 800;
+  line-height: 0.8;
+  letter-spacing: -0.08em;
+}
+
+.badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+  padding: 4px 10px;
+  border-radius: 999px;
+  color: #fff;
+  background: var(--red);
+  box-shadow: 0 6px 18px rgba(254, 44, 85, 0.4);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
 }
 
 .index {
-  flex: 0 0 24px;
-  padding-top: 3px;
-  color: var(--red);
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  min-width: 26px;
+  padding: 4px 7px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(10px);
   font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.06em;
+  font-size: 9px;
+  text-align: center;
 }
 
 .body {
   display: flex;
-  flex: 1 1 auto;
   flex-direction: column;
   gap: 7px;
   min-width: 0;
+  padding: 12px 7px 7px;
 }
 
-.kicker {
-  margin-bottom: 2px;
+.cat {
+  color: var(--red);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 
 .title {
   display: -webkit-box;
   overflow: hidden;
   color: var(--ink);
-  font-family: var(--font-serif);
-  font-size: 19px;
-  font-weight: 600;
-  line-height: 1.32;
-  letter-spacing: -0.012em;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.38;
+  letter-spacing: -0.015em;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
 }
 
 .featured .title {
-  font-size: clamp(27px, 8vw, 33px);
-  line-height: 1.16;
+  font-size: clamp(24px, 7.2vw, 30px);
+  line-height: 1.24;
   letter-spacing: -0.03em;
   -webkit-line-clamp: 4;
+}
+
+.featured .fallback-cat {
+  display: none;
 }
 
 .desc {
   display: -webkit-box;
   overflow: hidden;
-  color: var(--ink-soft);
-  font-size: 13px;
+  color: var(--muted);
+  font-size: 12.5px;
   line-height: 1.65;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
 
 .featured .desc {
-  margin-top: 3px;
   font-size: 14px;
   line-height: 1.7;
   -webkit-line-clamp: 3;
@@ -145,94 +297,65 @@ const indexLabel = computed(() => String(props.index + 1).padStart(2, '0'))
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  margin-top: 2px;
+  gap: 4px;
+  margin-top: 1px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 10.5px;
   line-height: 1.5;
 }
 
+.author {
+  color: var(--ink-soft);
+}
+
 .sep {
-  padding: 0 6px;
-  color: #c4c4c8;
+  color: rgba(255, 255, 255, 0.24);
 }
 
 .read-more {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 6px;
+  gap: 6px;
+  margin-top: 3px;
   color: var(--red);
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-}
-
-.thumb {
-  flex: 0 0 auto;
-  width: 92px;
-  height: 72px;
-  overflow: hidden;
-  border: 1px solid var(--line);
-  background: var(--paper-warm);
-}
-
-.featured .thumb {
-  width: 100%;
-  height: 200px;
-  margin-top: 16px;
-  border-color: var(--line-strong);
-}
-
-.thumb img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  font-size: 12.5px;
+  font-weight: 700;
 }
 
 @media (min-width: 960px) {
-  .story {
-    padding: 22px 0;
+  .media {
+    height: 190px;
+  }
+
+  .featured .media {
+    height: 400px;
+  }
+
+  .hero-title {
+    font-size: clamp(30px, 3.2vw, 40px);
   }
 
   .title {
-    font-size: 21px;
-  }
-
-  .desc {
-    font-size: 13.5px;
-  }
-
-  .featured {
-    padding: 30px 0 34px;
+    font-size: 18px;
   }
 
   .featured .title {
-    font-size: clamp(38px, 4vw, 52px);
+    font-size: clamp(30px, 3.2vw, 40px);
+    -webkit-line-clamp: 3;
   }
 
   .featured .desc {
-    max-width: 860px;
-    font-size: 16px;
+    font-size: 15px;
     -webkit-line-clamp: 4;
   }
 
-  .featured .thumb {
-    height: 360px;
-    margin-top: 22px;
+  .story:hover {
+    border-color: rgba(255, 255, 255, 0.18);
+    transform: translateY(-2px);
   }
 
-  .thumb {
-    width: 112px;
-    height: 84px;
-  }
-
-  .meta {
-    font-size: 11.5px;
-  }
-
-  .read-more {
-    font-size: 13px;
+  .story:hover .media img {
+    transform: scale(1.035);
   }
 }
 </style>

@@ -36,16 +36,19 @@ const { toast } = useToast()
   gap: 10px;
   max-width: min(100%, 440px);
   padding: 11px 15px;
+  border: 1px solid var(--line);
   border-left: 3px solid var(--red);
-  color: var(--white);
-  background: var(--ink);
+  color: #fff;
+  background: rgba(29, 29, 39, 0.94);
+  box-shadow: var(--shadow-float);
+  backdrop-filter: blur(16px);
   font-size: 12.5px;
   line-height: 1.5;
 }
 
 .label {
   flex: 0 0 auto;
-  color: #fca5a5;
+  color: #ff8fa3;
   font-family: var(--font-sans);
   font-size: 9px;
   font-weight: 700;
@@ -53,11 +56,11 @@ const { toast } = useToast()
 }
 
 .toast.success .label {
-  color: #fef2f2;
+  color: var(--cyan);
 }
 
 .text {
-  color: #f4f4f5;
+  color: #f4f4f7;
 }
 
 .toast-enter-active,

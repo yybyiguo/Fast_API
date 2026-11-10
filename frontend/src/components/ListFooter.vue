@@ -16,10 +16,10 @@ defineEmits(['retry'])
     </button>
     <span v-else-if="loadingMore" class="loading">
       <i class="spinner" aria-hidden="true"></i>
-      LOADING
+      加载中
     </span>
-    <span v-else-if="!hasMore" class="end">END OF EDITION · {{ total }}</span>
-    <span v-else class="end">SCROLL FOR MORE</span>
+    <span v-else-if="!hasMore" class="end">到底了 · {{ total }} 条</span>
+    <span v-else class="end">继续下滑</span>
   </div>
 </template>
 
@@ -32,9 +32,9 @@ defineEmits(['retry'])
   padding: 14px 0 28px;
   color: var(--muted);
   font-family: var(--font-sans);
-  font-size: 9.5px;
+  font-size: 10.5px;
   font-weight: 500;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.06em;
 }
 
 .loading {
@@ -46,7 +46,7 @@ defineEmits(['retry'])
 .spinner {
   width: 10px;
   height: 10px;
-  border: 1px solid #d4d4d8;
+  border: 1px solid var(--line-strong);
   border-top-color: var(--red);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;

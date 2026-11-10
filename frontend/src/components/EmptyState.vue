@@ -80,7 +80,7 @@ p {
   margin-top: 24px;
   padding: 0 20px;
   border: 1px solid var(--red);
-  color: var(--white);
+  color: #fff;
   background: var(--red);
   font-size: 12.5px;
   font-weight: 500;

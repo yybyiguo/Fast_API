@@ -64,8 +64,9 @@ function isActive(to) {
   flex: 0 0 auto;
   align-items: stretch;
   padding-bottom: var(--safe-bottom);
-  border-top: 2px solid var(--ink);
-  background: var(--white);
+  border-top: 1px solid var(--line);
+  background: rgba(10, 10, 16, 0.86);
+  backdrop-filter: blur(22px) saturate(150%);
 }
 
 .tab {
@@ -75,27 +76,30 @@ function isActive(to) {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 5px;
   height: var(--tabbar-h);
-  color: #6b7280;
+  color: var(--muted);
   font-size: 10px;
-  letter-spacing: 0.04em;
+  font-weight: 500;
+  letter-spacing: 0.03em;
   text-decoration: none;
   transition: color 0.18s ease;
 }
 
 .tab.active {
   color: var(--red);
-  font-weight: 500;
+  font-weight: 700;
 }
 
 .tab.active::before {
   position: absolute;
-  top: -2px;
+  top: 0;
   left: 50%;
-  width: 22px;
-  height: 2px;
+  width: 18px;
+  height: 3px;
+  border-radius: 0 0 3px 3px;
   background: var(--red);
+  box-shadow: 0 0 14px rgba(254, 44, 85, 0.7);
   content: '';
   transform: translateX(-50%);
 }

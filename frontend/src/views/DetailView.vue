@@ -108,6 +108,29 @@ async function toggleFavorite() {
 function openRelated(id) {
   router.push({ name: 'detail', params: { id } })
 }
+
+async function share() {
+  const url = window.location.href
+  const title = article.value?.title || '今日资讯'
+  try {
+    if (navigator.share) {
+      await navigator.share({ title, url })
+      return
+    }
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(url)
+      toast.success('链接已复制')
+      return
+    }
+    toast.error('当前浏览器不支持分享')
+  } catch (error) {
+    if (error?.name !== 'AbortError') toast.error('分享失败')
+  }
+}
+
+function scrollTop() {
+  scroller.value?.scrollTo({ top: 0, behavior: 'smooth' })
+}
 </script>
 
 <template>
@@ -200,41 +223,68 @@ function openRelated(id) {
       </template>
     </div>
 
-    <div v-if="article && !loading" class="actionbar">
+    <div v-if="article && !loading" class="rail" aria-label="文章操作">
       <button
         type="button"
-        class="fav"
+        class="rail-btn"
         :class="{ on: favorited }"
         :disabled="favBusy"
         :aria-pressed="favorited"
+        aria-label="收藏"
         @click="toggleFavorite"
       >
-        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
           <path
             d="M12 20.2S4.6 15.6 4.6 10.4A4.35 4.35 0 0 1 12 7.1a4.35 4.35 0 0 1 7.4 3.3c0 5.2-7.4 9.8-7.4 9.8z"
             :fill="favorited ? 'currentColor' : 'none'"
             stroke="currentColor"
-            stroke-width="1.6"
+            stroke-width="1.7"
             stroke-linejoin="round"
           />
         </svg>
         <span>{{ favorited ? '已收藏' : '收藏' }}</span>
       </button>
 
-      <span class="read-count">{{ formatViews(article.views) }} READS</span>
+      <button type="button" class="rail-btn" aria-label="分享" @click="share">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <path
+            d="M12 15V4m0 0L8 8m4-4 4 4M5 14v5.5A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V14"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        <span>分享</span>
+      </button>
+
+      <button type="button" class="rail-btn" aria-label="回到顶部" @click="scrollTop">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <path
+            d="M12 19V5m0 0-6 6m6-6 6 6"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        <span>顶部</span>
+      </button>
     </div>
   </div>
 </template>
 
 <style scoped>
 .detail-scroll {
-  padding-bottom: 24px;
-  background: var(--white);
+  padding-bottom: 56px;
+  background: var(--paper);
 }
 
 .article {
-  padding: 24px 20px 30px;
-  background: var(--white);
+  padding: 24px 64px 30px 20px;
+  background: var(--paper);
 }
 
 .kicker {
@@ -270,14 +320,16 @@ h1 {
 
 .sep {
   padding: 0 7px;
-  color: #c4c4c8;
+  color: #6f6f7e;
 }
 
 .cover {
   margin: 22px 0 0;
   padding: 0;
-  border: 1px solid var(--ink);
-  background: var(--paper-warm);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface-2);
 }
 
 .cover img {
@@ -294,9 +346,9 @@ h1 {
 
 .content p {
   margin-top: 17px;
-  color: #27272a;
+  color: var(--ink-soft);
   font-size: 16.5px;
-  line-height: 1.9;
+  line-height: 1.95;
   text-align: justify;
   word-break: break-word;
 }
@@ -329,9 +381,9 @@ h1 {
 }
 
 .related {
-  padding: 22px 20px 8px;
-  border-top: 1px solid var(--ink);
-  background: var(--white);
+  padding: 22px 64px 8px 20px;
+  border-top: 1px solid var(--line);
+  background: var(--paper);
 }
 
 .related h2 {
@@ -402,57 +454,76 @@ h1 {
   text-align: center;
 }
 
-.actionbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex: 0 0 auto;
-  gap: 12px;
-  padding: 10px 16px calc(10px + var(--safe-bottom));
-  border-top: 1px solid var(--ink);
-  background: var(--white);
-}
-
-.fav {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  height: 42px;
-  padding: 0 20px;
-  border: 1px solid var(--red);
-  color: var(--red);
-  background: transparent;
-  font-size: 12.5px;
-  font-weight: 500;
-  transition: background 0.18s ease, color 0.18s ease;
-}
-
-.fav.on {
-  color: var(--white);
-  background: var(--red);
-}
-
-.fav:active {
-  color: var(--white);
-  background: var(--red);
-}
-
+.actionbar,
+.fav,
 .read-count {
+  display: none;
+}
+
+.rail {
+  position: fixed;
+  right: 10px;
+  bottom: calc(86px + var(--safe-bottom));
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.rail-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 48px;
+  padding: 0;
+  border: 0;
+  color: #fff;
+  background: transparent;
+  font-size: 9px;
+}
+
+.rail-btn svg {
+  box-sizing: content-box;
+  width: 20px;
+  height: 20px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: #fff;
+  background: rgba(22, 22, 30, 0.78);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(14px);
+}
+
+.rail-btn span {
   color: var(--muted);
-  font-family: var(--font-sans);
   font-size: 9px;
   font-weight: 500;
-  letter-spacing: 0.14em;
+}
+
+.rail-btn.on svg {
+  border-color: var(--red);
+  color: #fff;
+  background: var(--red);
+  box-shadow: 0 0 22px rgba(254, 44, 85, 0.5);
+}
+
+.rail-btn.on span {
+  color: var(--red);
+}
+
+.rail-btn:active svg {
+  transform: scale(0.94);
 }
 
 .article-skeleton {
   padding: 26px 20px;
-  background: var(--white);
+  background: var(--paper);
 }
 
 .sk {
-  background: linear-gradient(100deg, #f1f1f3 20%, #fafafa 40%, #f1f1f3 60%);
+  background: linear-gradient(100deg, #1a1a24 20%, #262631 40%, #1a1a24 60%);
   background-size: 220% 100%;
   animation: shimmer 1.4s linear infinite;
 }
@@ -545,6 +616,11 @@ h1 {
 
   .actionbar {
     padding: 12px 48px;
+  }
+
+  .rail {
+    right: 32px;
+    bottom: 40px;
   }
 }
 </style>

@@ -191,6 +191,7 @@ async function submit() {
   min-height: 0;
   overflow-y: auto;
   padding: 0 16px calc(28px + var(--safe-bottom));
+  background: var(--paper);
 }
 
 .topbar {
@@ -199,7 +200,7 @@ async function submit() {
   gap: 12px;
   padding-top: calc(14px + var(--safe-top));
   padding-bottom: 16px;
-  border-bottom: 1px solid var(--ink);
+  border-bottom: 1px solid var(--line);
 }
 
 .back {
@@ -208,14 +209,15 @@ async function submit() {
   flex: 0 0 auto;
   width: 34px;
   height: 34px;
-  border: 1px solid var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 11px;
   color: var(--ink);
-  background: transparent;
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .back:active {
-  color: var(--white);
-  background: var(--ink);
+  color: #fff;
+  background: var(--red);
 }
 
 .kicker {
@@ -252,7 +254,9 @@ async function submit() {
   padding: 22px 20px 20px;
   border: 1px solid var(--line);
   border-top: 3px solid var(--red);
-  background: var(--white);
+  border-radius: 0 0 20px 20px;
+  background: var(--surface);
+  box-shadow: 0 20px 46px rgba(0, 0, 0, 0.35);
 }
 
 .tabs {
@@ -308,7 +312,7 @@ form {
   height: 44px;
   padding: 0 2px;
   border: 0;
-  border-bottom: 1px solid #d4d4d8;
+  border-bottom: 1px solid var(--line-strong);
   color: var(--ink);
   background: transparent;
   outline: none;
@@ -323,7 +327,7 @@ form {
   display: flex;
   align-items: center;
   gap: 10px;
-  border-bottom: 1px solid #d4d4d8;
+  border-bottom: 1px solid var(--line-strong);
   transition: border-color 0.18s ease;
 }
 
@@ -373,10 +377,11 @@ form {
   margin-top: 24px;
   padding: 0 18px;
   border: 1px solid var(--red);
-  color: var(--white);
+  border-radius: 12px;
+  color: #fff;
   background: var(--red);
   font-size: 13.5px;
-  font-weight: 500;
+  font-weight: 600;
   transition: background 0.18s ease;
 }
 
@@ -385,9 +390,9 @@ form {
 }
 
 .submit:disabled {
-  border-color: #d4d4d8;
-  color: #6b7280;
-  background: #f4f4f5;
+  border-color: var(--line);
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .tip {
@@ -403,7 +408,7 @@ form {
   gap: 8px;
   margin: 24px 0 0 2px;
   padding-bottom: 3px;
-  border-bottom: 1px solid var(--ink);
+  border-bottom: 1px solid var(--line-strong);
   color: var(--ink);
   font-size: 12px;
 }
