@@ -144,8 +144,8 @@ defineExpose({ refresh })
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     column-gap: 40px;
-    max-width: 1080px;
-    margin: 0 auto;
+    max-width: none;
+    margin: 0;
     padding: 0 40px;
   }
 
@@ -161,6 +161,12 @@ defineExpose({ refresh })
 
   .feed :deep(.footer) {
     grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 1800px) {
+  .feed {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 </style>

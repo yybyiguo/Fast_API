@@ -293,15 +293,15 @@ button:disabled {
   }
 }
 
-/* 桌面端：左侧导航 + 右侧内容区 */
+/* 桌面端：左侧导航 + 右侧内容区，整屏铺满 */
 @media (min-width: 960px) {
   body {
-    background: #e7e3dd;
+    background: var(--paper);
   }
   .app {
     flex-direction: row;
-    max-width: 1320px;
-    border-top: 0;
-    border-bottom: 0;
+    width: 100%;
+    max-width: none;
+    border: 0;
   }
 }

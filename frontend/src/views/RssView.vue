@@ -556,20 +556,21 @@ h1 {
 
   .scroll {
     width: 100%;
-    max-width: 940px;
-    margin: 0 auto;
+    max-width: none;
+    margin: 0;
   }
 
   .hint {
-    padding: 18px 24px 0;
+    padding: 18px 40px 0;
   }
 
   .card {
-    margin: 20px 24px 0;
+    max-width: 760px;
+    margin: 20px 40px 0;
   }
 
   .list {
-    padding: 0 24px;
+    padding: 0 40px;
   }
 }
 </style>

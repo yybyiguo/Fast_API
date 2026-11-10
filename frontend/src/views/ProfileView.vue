@@ -988,9 +988,9 @@ function doLogout() {
   .head-top,
   .guest,
   .me {
-    max-width: 900px;
-    margin-right: auto;
-    margin-left: auto;
+    max-width: none;
+    margin-right: 0;
+    margin-left: 0;
   }
 
   .me {
@@ -1015,12 +1015,12 @@ function doLogout() {
 
   .scroll {
     width: 100%;
-    max-width: 900px;
-    margin: 0 auto;
+    max-width: none;
+    margin: 0;
   }
 
   .tab {
-    padding: 18px 20px 15px;
+    padding: 18px 40px 15px;
   }
 
   .tab b {
@@ -1028,15 +1028,15 @@ function doLogout() {
   }
 
   .panel-head {
-    padding: 16px 18px 12px;
+    padding: 16px 40px 12px;
   }
 
   .list {
-    padding: 0 18px;
+    padding: 0 40px;
   }
 
   .account-actions {
-    padding: 28px 18px 0;
+    padding: 28px 40px 0;
   }
 
   .logout {
