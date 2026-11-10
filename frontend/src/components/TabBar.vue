@@ -5,8 +5,7 @@ const route = useRoute()
 
 const items = [
   { to: '/', label: '首页', icon: 'home' },
-  { to: '/favorites', label: '收藏', icon: 'heart' },
-  { to: '/history', label: '历史', icon: 'clock' },
+  { to: '/rss', label: '订阅源', icon: 'rss' },
   { to: '/profile', label: '我的', icon: 'user' }
 ]
 
@@ -33,18 +32,15 @@ function isActive(to) {
           stroke-linejoin="round"
         />
       </svg>
-      <svg v-else-if="item.icon === 'heart'" viewBox="0 0 24 24" width="21" height="21" aria-hidden="true">
+      <svg v-else-if="item.icon === 'rss'" viewBox="0 0 24 24" width="21" height="21" aria-hidden="true">
         <path
-          d="M12 20.2S4.6 15.6 4.6 10.4A4.35 4.35 0 0 1 12 7.1a4.35 4.35 0 0 1 7.4 3.3c0 5.2-7.4 9.8-7.4 9.8z"
+          d="M5 5a14 14 0 0 1 14 14M5 11a8 8 0 0 1 8 8"
           fill="none"
           stroke="currentColor"
           stroke-width="1.6"
-          stroke-linejoin="round"
+          stroke-linecap="round"
         />
-      </svg>
-      <svg v-else-if="item.icon === 'clock'" viewBox="0 0 24 24" width="21" height="21" aria-hidden="true">
-        <circle cx="12" cy="12" r="8.4" fill="none" stroke="currentColor" stroke-width="1.6" />
-        <path d="M12 7.3V12l3.1 1.9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+        <circle cx="6" cy="18" r="1.8" fill="currentColor" />
       </svg>
       <svg v-else viewBox="0 0 24 24" width="21" height="21" aria-hidden="true">
         <circle cx="12" cy="8.2" r="3.6" fill="none" stroke="currentColor" stroke-width="1.6" />

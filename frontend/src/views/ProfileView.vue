@@ -1,17 +1,31 @@
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
-import { fetchFavorites } from '../api/favorite'
-import { fetchHistory } from '../api/history'
+import EmptyState from '../components/EmptyState.vue'
+import ListFooter from '../components/ListFooter.vue'
+import ListSkeleton from '../components/ListSkeleton.vue'
+import SavedItem from '../components/SavedItem.vue'
+import { clearFavorites, fetchFavorites, shiftFavorite } from '../api/favorite'
+import { clearHistory, fetchHistory, removeHistory } from '../api/history'
 import { useAuth } from '../stores/auth'
 import { useToast } from '../composables/useToast'
-import { initialOf } from '../utils/format'
+import { usePagedList } from '../composables/usePagedList'
+import { useInfiniteScroll } from '../composables/useInfiniteScroll'
+import { formatRelativeTime, initialOf } from '../utils/format'
 import { resolveAvatar } from '../utils/media'
 
 const auth = useAuth()
 const router = useRouter()
+const route = useRoute()
 const toast = useToast()
+
+const profileScroll = ref(null)
+const sentinel = ref(null)
+const activeTab = ref(route.query.tab === 'history' ? 'history' : 'favorites')
+const clearing = ref(false)
+const removingId = ref(0)
+let clearTimer = 0
 
 const stats = reactive({ favorites: 0, history: 0, loaded: false })
 const editOpen = ref(false)
@@ -33,11 +47,101 @@ const genders = [
   { value: 'unknown', label: '保密' }
 ]
 
+function handleAuthError(error) {
+  if (error?.status !== 401) return false
+  auth.logout()
+  router.replace({
+    name: 'login',
+    query: { redirect: `/profile?tab=${activeTab.value}` }
+  })
+  return true
+}
+
+async function fetchFavoritePage(page, pageSize) {
+  try {
+    return await fetchFavorites(page, pageSize)
+  } catch (error) {
+    handleAuthError(error)
+    throw error
+  }
+}
+
+async function fetchHistoryPage(page, pageSize) {
+  try {
+    return await fetchHistory(page, pageSize)
+  } catch (error) {
+    handleAuthError(error)
+    throw error
+  }
+}
+
+const favorites = usePagedList(fetchFavoritePage)
+const history = usePagedList(fetchHistoryPage)
+
+const active = computed(() => (activeTab.value === 'favorites' ? favorites : history))
+const listItems = computed(() => active.value.items.value)
+const listTotal = computed(() => active.value.total.value)
+const listHasMore = computed(() => active.value.hasMore.value)
+const listLoading = computed(() => active.value.loading.value)
+const listLoadingMore = computed(() => active.value.loadingMore.value)
+const listError = computed(() => active.value.error.value)
+const isFavorites = computed(() => activeTab.value === 'favorites')
+
+function listFor(tab) {
+  return tab === 'favorites' ? favorites : history
+}
+
+function ensureLoaded(tab) {
+  const list = listFor(tab)
+  if (list.page.value === 0 && !list.loading.value) {
+    list.reload().catch(() => {})
+  }
+}
+
+function switchTab(tab) {
+  if (tab === activeTab.value) return
+  activeTab.value = tab
+  clearing.value = false
+  clearTimeout(clearTimer)
+  router.replace({ name: 'profile', query: { ...route.query, tab } })
+  if (auth.isLoggedIn.value) ensureLoaded(tab)
+}
+
+function reloadActive() {
+  active.value.reload().catch(() => {})
+}
+
+function loadMoreActive() {
+  active.value.loadMore().catch(() => {})
+}
+
+watch(
+  () => route.query.tab,
+  (tab) => {
+    if (tab !== 'favorites' && tab !== 'history') return
+    if (tab === activeTab.value) return
+    activeTab.value = tab
+    clearing.value = false
+    if (auth.isLoggedIn.value) ensureLoaded(tab)
+  }
+)
+
 watch(
   user,
   (value) => {
     brokenAvatar.value = false
-    if (!value) return
+    if (!value) {
+      stats.favorites = 0
+      stats.history = 0
+      stats.loaded = false
+      favorites.items.value = []
+      favorites.total.value = 0
+      favorites.hasMore.value = false
+      history.items.value = []
+      history.total.value = 0
+      history.hasMore.value = false
+      return
+    }
     form.nickname = value.nickname || ''
     form.bio = value.bio || ''
     form.gender = value.gender || 'unknown'
@@ -45,19 +149,30 @@ watch(
   { immediate: true }
 )
 
+useInfiniteScroll(profileScroll, sentinel, () => {
+  if (!auth.isLoggedIn.value) return
+  const list = active.value
+  if (list.loading.value || list.loadingMore.value || list.error.value || !list.hasMore.value) return
+  list.loadMore().catch(() => {})
+})
+
 onMounted(async () => {
   await auth.ensureReady()
-  if (auth.isLoggedIn.value) loadStats()
+  if (!auth.isLoggedIn.value) return
+  loadStats()
+  ensureLoaded(activeTab.value)
 })
+
+onBeforeUnmount(() => clearTimeout(clearTimer))
 
 async function loadStats() {
   try {
-    const [favorites, history] = await Promise.all([
+    const [favoritesRes, historyRes] = await Promise.all([
       fetchFavorites(1, 1),
       fetchHistory(1, 1)
     ])
-    stats.favorites = favorites.total
-    stats.history = history.total
+    stats.favorites = favoritesRes.total
+    stats.history = historyRes.total
     stats.loaded = true
   } catch (error) {
     if (error.status === 401) auth.logout()
@@ -65,7 +180,74 @@ async function loadStats() {
 }
 
 function goLogin() {
-  router.push({ name: 'login', query: { redirect: '/profile' } })
+  router.push({ name: 'login', query: { redirect: `/profile?tab=${activeTab.value}` } })
+}
+
+function openItem(item) {
+  router.push({ name: 'detail', params: { id: item.id } })
+}
+
+async function removeItem(item) {
+  if (removingId.value) return
+  removingId.value = item.id
+
+  try {
+    if (isFavorites.value) {
+      await shiftFavorite(item.id)
+      favorites.items.value = favorites.items.value.filter((entry) => entry.id !== item.id)
+      favorites.total.value = Math.max(0, favorites.total.value - 1)
+      stats.favorites = Math.max(0, stats.favorites - 1)
+      toast.success('已取消收藏')
+    } else {
+      await removeHistory(item.id)
+      history.items.value = history.items.value.filter((entry) => entry.id !== item.id)
+      history.total.value = Math.max(0, history.total.value - 1)
+      stats.history = Math.max(0, stats.history - 1)
+      toast.success('已删除这条历史')
+    }
+  } catch (error) {
+    if (!handleAuthError(error)) toast.error(error.message)
+  } finally {
+    removingId.value = 0
+  }
+}
+
+function askClear() {
+  if (!listTotal.value) return
+  if (clearing.value) {
+    doClear()
+    return
+  }
+  clearing.value = true
+  clearTimeout(clearTimer)
+  clearTimer = setTimeout(() => {
+    clearing.value = false
+  }, 3200)
+}
+
+async function doClear() {
+  clearing.value = false
+  clearTimeout(clearTimer)
+
+  try {
+    if (isFavorites.value) {
+      await clearFavorites()
+      favorites.items.value = []
+      favorites.total.value = 0
+      favorites.hasMore.value = false
+      stats.favorites = 0
+      toast.success('已清空收藏')
+    } else {
+      await clearHistory()
+      history.items.value = []
+      history.total.value = 0
+      history.hasMore.value = false
+      stats.history = 0
+      toast.success('已清空浏览记录')
+    }
+  } catch (error) {
+    if (!handleAuthError(error)) toast.error(error.message)
+  }
 }
 
 function openEdit() {
@@ -116,6 +298,12 @@ function doLogout() {
   stats.favorites = 0
   stats.history = 0
   stats.loaded = false
+  favorites.items.value = []
+  favorites.total.value = 0
+  favorites.hasMore.value = false
+  history.items.value = []
+  history.total.value = 0
+  history.hasMore.value = false
   toast.success('已退出登录')
 }
 </script>
@@ -151,48 +339,114 @@ function doLogout() {
       </div>
     </header>
 
-    <div class="scroll">
-      <div v-if="user" class="stats">
-        <button type="button" class="stat" @click="router.push('/favorites')">
+    <div ref="profileScroll" class="scroll">
+      <div class="tabs" role="tablist" aria-label="收藏与浏览记录">
+        <button
+          type="button"
+          role="tab"
+          class="tab"
+          :class="{ active: activeTab === 'favorites' }"
+          :aria-selected="activeTab === 'favorites'"
+          @click="switchTab('favorites')"
+        >
           <b>{{ stats.loaded ? stats.favorites : '–' }}</b>
-          <span>SAVED STORIES</span>
+          <span>收藏</span>
         </button>
-        <i class="divider" aria-hidden="true"></i>
-        <button type="button" class="stat" @click="router.push('/history')">
+
+        <button
+          type="button"
+          role="tab"
+          class="tab"
+          :class="{ active: activeTab === 'history' }"
+          :aria-selected="activeTab === 'history'"
+          @click="switchTab('history')"
+        >
           <b>{{ stats.loaded ? stats.history : '–' }}</b>
-          <span>READING HISTORY</span>
+          <span>浏览记录</span>
         </button>
       </div>
 
-      <div class="menu">
-        <button type="button" class="menu-item" @click="router.push('/favorites')">
-          <span class="index" aria-hidden="true">01</span>
-          <span class="menu-label">我的收藏</span>
-          <span class="chevron" aria-hidden="true">→</span>
-        </button>
+      <section class="panel">
+        <div class="panel-head">
+          <span class="panel-label">{{ isFavorites ? 'SAVED STORIES' : 'READING HISTORY' }}</span>
+          <div class="panel-actions">
+            <span class="panel-count">{{ listTotal }} 篇</span>
+            <button
+              v-if="user && listTotal"
+              type="button"
+              class="clear"
+              :class="{ confirm: clearing }"
+              @click="askClear"
+            >
+              {{ clearing ? '确认清空' : '清空' }}
+            </button>
+          </div>
+        </div>
 
-        <button type="button" class="menu-item" @click="router.push('/history')">
-          <span class="index" aria-hidden="true">02</span>
-          <span class="menu-label">浏览历史</span>
-          <span class="chevron" aria-hidden="true">→</span>
-        </button>
+        <div v-if="!user" class="login-note">
+          <p>登录后可在这里查看收藏与浏览记录，使用上方按钮登录即可。</p>
+        </div>
 
-        <button type="button" class="menu-item" @click="router.push('/rss')">
-          <span class="index" aria-hidden="true">03</span>
-          <span class="menu-label">订阅源</span>
-          <span class="chevron" aria-hidden="true">→</span>
-        </button>
+        <ListSkeleton v-else-if="listLoading && !listItems.length" :count="3" />
 
-        <button v-if="user" type="button" class="menu-item" @click="openEdit">
-          <span class="index" aria-hidden="true">04</span>
-          <span class="menu-label">编辑资料</span>
-          <span class="chevron" aria-hidden="true">→</span>
+        <EmptyState
+          v-else-if="listError && !listItems.length"
+          icon="error"
+          title="加载失败"
+          :description="listError"
+          action-text="重新加载"
+          @action="reloadActive"
+        />
+
+        <EmptyState
+          v-else-if="!listItems.length"
+          :icon="isFavorites ? 'heart' : 'clock'"
+          :title="isFavorites ? '还没有收藏' : '还没有浏览记录'"
+          :description="
+            isFavorites
+              ? '看到喜欢的资讯，在详情页点一下收藏，就会出现在这里'
+              : '看过的资讯会自动记录在这里，方便回头再找'
+          "
+          action-text="去首页看看"
+          @action="router.push('/')"
+        />
+
+        <div v-else class="list">
+          <SavedItem
+            v-for="item in listItems"
+            :key="item.id"
+            :item="item"
+            :action="isFavorites ? 'heart' : 'close'"
+            :time-text="
+              isFavorites
+                ? item.createdAt
+                  ? `收藏于 ${formatRelativeTime(item.createdAt)}`
+                  : ''
+                : item.viewedAt
+                  ? `${formatRelativeTime(item.viewedAt)}浏览`
+                  : ''
+            "
+            @open="openItem"
+            @remove="removeItem"
+          />
+
+          <ListFooter
+            :has-more="listHasMore"
+            :loading-more="listLoadingMore"
+            :error="listError"
+            :total="listTotal"
+            @retry="loadMoreActive"
+          />
+        </div>
+
+        <div ref="sentinel" class="sentinel" aria-hidden="true"></div>
+      </section>
+
+      <div v-if="user" class="account-actions">
+        <button type="button" class="logout" @click="confirmLogout.open = true">
+          退出登录
         </button>
       </div>
-
-      <button v-if="user" type="button" class="logout" @click="confirmLogout.open = true">
-        退出登录
-      </button>
 
       <div class="about">
         <p>今日资讯 · MOBILE EDITION</p>
@@ -415,89 +669,132 @@ function doLogout() {
 }
 
 .scroll {
-  padding: 0 16px calc(26px + var(--safe-bottom));
+  background: var(--white);
+  padding-bottom: calc(24px + var(--safe-bottom));
 }
 
-.stats {
+.tabs {
+  position: sticky;
+  top: 0;
+  z-index: 2;
   display: flex;
-  align-items: stretch;
-  padding: 22px 0;
+  background: var(--white);
   border-bottom: 1px solid var(--ink);
 }
 
-.stat {
+.tab {
   display: flex;
   flex: 1;
   flex-direction: column;
   align-items: flex-start;
-  gap: 7px;
-  padding-left: 2px;
+  gap: 5px;
+  padding: 16px 16px 13px;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  text-align: left;
+  transition: color 0.18s ease, border-color 0.18s ease;
 }
 
-.stat b {
-  color: var(--red);
+.tab + .tab {
+  border-left: 1px solid var(--line);
+}
+
+.tab b {
+  color: var(--ink-soft);
   font-family: var(--font-serif);
-  font-size: 38px;
+  font-size: 34px;
   font-weight: 600;
   line-height: 1;
   letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
 }
 
-.stat span {
-  color: var(--muted);
-  font-size: 8.5px;
+.tab span {
+  font-size: 10px;
   font-weight: 500;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.08em;
 }
 
-.divider {
-  width: 1px;
-  margin: 4px 0;
-  background: var(--line);
+.tab.active {
+  border-bottom-color: var(--red);
+  color: var(--red);
 }
 
-.menu {
-  margin-top: 6px;
+.tab.active b {
+  color: var(--red);
 }
 
-.menu-item {
+.panel {
+  background: var(--white);
+}
+
+.panel-head {
   display: flex;
   align-items: center;
-  gap: 14px;
-  width: 100%;
-  height: 56px;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px 10px;
   border-bottom: 1px solid var(--line);
-  text-align: left;
 }
 
-.menu-item:active {
-  background: var(--red-soft);
+.panel-label {
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
 }
 
-.index {
-  flex: 0 0 auto;
-  width: 22px;
+.panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.panel-count {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.clear {
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--red);
   color: var(--red);
-  font-family: var(--font-mono);
-  font-size: 10px;
+  background: transparent;
+  font-size: 10.5px;
+  font-weight: 500;
 }
 
-.menu-label {
-  flex: 1;
-  color: var(--ink);
-  font-size: 14px;
+.clear.confirm {
+  color: var(--white);
+  background: var(--red);
 }
 
-.chevron {
+.login-note {
+  padding: 28px 16px 32px;
+}
+
+.login-note p {
   color: var(--muted);
   font-size: 13px;
+  line-height: 1.7;
+}
+
+.list {
+  padding: 0 16px;
+}
+
+.sentinel {
+  height: 1px;
+}
+
+.account-actions {
+  padding: 24px 16px 0;
 }
 
 .logout {
   width: 100%;
   height: 44px;
-  margin-top: 26px;
   border: 1px solid var(--red);
   color: var(--red);
   background: transparent;

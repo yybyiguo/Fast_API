@@ -7,10 +7,9 @@
 - **首页资讯流**：栏目切换（数据来自 `news_categories`）、分页加载、自定义下拉刷新、触底自动加载、骨架屏、空分类/加载失败状态
 - **资讯详情**：浏览量自增、正文分段、相关推荐、收藏切换、进入详情自动记录浏览历史
 - **登录 / 注册**：Bearer Token，`localStorage` 持久化，启动时自动校验，401 自动清理登录态；登录后回到原页面
-- **我的收藏**：分页列表、取消单条收藏、一键清空、未登录自动跳登录
-- **浏览历史**：分页列表、删除单条、一键清空
-- **个人中心**：资料展示与编辑（昵称 / 简介 / 性别）、收藏与历史数量统计、退出登录
-- **移动端适配**：安全区、`100dvh`、底部 TabBar、下拉刷新、点击反馈、输入框防 iOS 缩放、`IntersectionObserver` 触底加载
+- **我的**：资料展示与编辑（昵称 / 简介 / 性别）、收藏与浏览记录在同一页内切换（不跳页、不弹窗）、单条删除、行内二次清空、退出登录
+- **订阅源**：作为底部一级入口，管理 RSS 源；非管理员显示无权限提示
+- **移动端适配**：安全区、`100dvh`、底部 TabBar（首页 / 订阅源 / 我的）、下拉刷新、点击反馈、输入框防 iOS 缩放、`IntersectionObserver` 触底加载
 
 ## 界面风格
 
@@ -22,9 +21,9 @@
 | --- | --- | --- |
 | ![首页](screenshots/home.png) | ![详情](screenshots/detail.png) | ![登录](screenshots/login.png) |
 
-| 收藏 | 历史 | 我的 |
+| 我的 · 收藏 | 我的 · 浏览记录 | 订阅源 |
 | --- | --- | --- |
-| ![收藏](screenshots/favorites.png) | ![历史](screenshots/history.png) | ![我的](screenshots/profile.png) |
+| ![我的收藏](screenshots/favorites.png) | ![我的浏览记录](screenshots/history.png) | ![订阅源](screenshots/rss.png) |
 
 > 截图均为 390 × 844 视口真实渲染，数据来自本机 MySQL 的 `test` 库（RSS 抓取）。
 
@@ -80,7 +79,7 @@ frontend/
    │  ├─ useInfiniteScroll.js# 触底加载
    │  └─ useToast.js
    ├─ components/            # TabBar / NewsCard / AppHeader / EmptyState …
-   ├─ views/                 # Home / Detail / Login / Favorites / History / Profile
+   ├─ views/                 # Home / Detail / Login / Profile / Rss
    ├─ utils/                 # 时间、浏览量、图片地址处理
    └─ styles/main.css        # 设计变量与全局重置
 ```

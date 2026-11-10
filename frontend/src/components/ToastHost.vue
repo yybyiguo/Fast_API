@@ -20,8 +20,8 @@ const { toast } = useToast()
 <style scoped>
 .toast-layer {
   position: fixed;
-  top: calc(var(--safe-top) + 14px);
   right: 0;
+  bottom: calc(var(--tabbar-h) + var(--safe-bottom) + 14px);
   left: 0;
   z-index: 90;
   display: flex;
@@ -68,6 +68,6 @@ const { toast } = useToast()
 .toast-enter-from,
 .toast-leave-to {
   opacity: 0;
-  transform: translateY(-8px);
+  transform: translateY(8px);
 }
 </style>

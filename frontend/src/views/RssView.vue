@@ -1,7 +1,6 @@
 <script setup>
 import { onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import AppHeader from '../components/AppHeader.vue'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
 import EmptyState from '../components/EmptyState.vue'
 import ListSkeleton from '../components/ListSkeleton.vue'
@@ -198,20 +197,20 @@ onBeforeUnmount(() => clearTimeout(reloadTimer))
 
 <template>
   <div class="page">
-    <AppHeader title="订阅源" back>
-      <button v-if="!denied" type="button" class="header-action" @click="formOpen = !formOpen">
-        {{ formOpen ? '收起' : '添加' }}
-      </button>
-    </AppHeader>
+    <header class="page-head">
+      <div class="head-top">
+        <span class="kicker no-rule">RSS SOURCES</span>
+        <button v-if="!denied" type="button" class="header-action" @click="formOpen = !formOpen">
+          {{ formOpen ? '收起' : '添加' }}
+        </button>
+      </div>
+      <div class="head-row">
+        <h1>订阅源</h1>
+        <span class="count">{{ feeds.length }} 个</span>
+      </div>
+    </header>
 
     <div class="scroll">
-      <div class="page-head">
-        <span class="kicker">RSS SOURCES</span>
-        <div class="head-row">
-          <h1>订阅源</h1>
-          <span class="count">{{ feeds.length }} 个</span>
-        </div>
-      </div>
       <p class="hint">定时抓取 RSS；每个源会在首页生成一个同名分类，文章只在那个分类下展示。</p>
 
       <form v-if="formOpen" class="card form" @submit.prevent="submit">
@@ -331,8 +330,18 @@ onBeforeUnmount(() => clearTimeout(reloadTimer))
 }
 
 .page-head {
-  padding: 22px 16px 16px;
+  flex: 0 0 auto;
+  padding: calc(12px + var(--safe-top)) 16px 18px;
+  border-top: 3px solid var(--red);
   border-bottom: 1px solid var(--ink);
+  background: var(--paper);
+}
+
+.head-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .head-row {
