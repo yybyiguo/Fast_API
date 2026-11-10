@@ -1,6 +1,6 @@
-# 今日资讯 · 移动端前端
+# 今日资讯 · 响应式前端
 
-基于 **Vue 3 + Vite + Vue Router** 的移动端资讯阅读应用，对接 `backend/main.py` 提供的 FastAPI 接口（news / user / favorite / history）。后端代码未做任何修改。
+基于 **Vue 3 + Vite + Vue Router** 的移动端优先、桌面端适配的资讯阅读应用，对接 `backend/main.py` 提供的 FastAPI 接口（news / user / favorite / history）。后端代码未做任何修改。
 
 ## 功能
 
@@ -10,6 +10,7 @@
 - **我的**：资料展示与编辑（昵称 / 简介 / 性别）、收藏与浏览记录在同一页内切换（不跳页、不弹窗）、单条删除、行内二次清空、退出登录
 - **订阅源**：作为底部一级入口，管理 RSS 源；非管理员显示无权限提示
 - **移动端适配**：安全区、`100dvh`、底部 TabBar（首页 / 订阅源 / 我的）、下拉刷新、点击反馈、输入框防 iOS 缩放、`IntersectionObserver` 触底加载
+- **桌面端适配**：≥960px 切换为左侧编辑式导航，底部 TabBar 自动隐藏；≥1200px 首页变为双栏报纸流，详情与「我的」使用居中阅读栏
 
 ## 界面风格
 
@@ -26,6 +27,14 @@
 | ![我的收藏](screenshots/favorites.png) | ![我的浏览记录](screenshots/history.png) | ![订阅源](screenshots/rss.png) |
 
 > 截图均为 390 × 844 视口真实渲染，数据来自本机 MySQL 的 `test` 库（RSS 抓取）。
+
+## 桌面端效果
+
+| 首页 | 详情 | 我的 |
+| --- | --- | --- |
+| ![桌面首页](screenshots/desktop-home.png) | ![桌面详情](screenshots/desktop-detail.png) | ![桌面我的](screenshots/desktop-profile.png) |
+
+> 桌面截图均为 1440 × 900 视口：左侧固定导航 + 右侧内容区，首页双栏、详情单栏阅读。
 
 ## 快速开始
 

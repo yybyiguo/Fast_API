@@ -499,4 +499,52 @@ h1 {
     background-position: -40% 0;
   }
 }
+
+@media (min-width: 960px) {
+  .article {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 40px 48px 48px;
+  }
+
+  h1 {
+    font-size: 48px;
+  }
+
+  .byline {
+    font-size: 12px;
+  }
+
+  .content p {
+    font-size: 18px;
+    line-height: 1.95;
+  }
+
+  .cover img {
+    max-height: 460px;
+  }
+
+  .related {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 28px 48px 14px;
+  }
+
+  .related h2 {
+    font-size: 28px;
+  }
+
+  .related-title {
+    font-size: 18px;
+  }
+
+  .footnote {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  .actionbar {
+    padding: 12px 48px;
+  }
+}
 </style>

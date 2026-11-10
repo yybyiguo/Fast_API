@@ -138,4 +138,29 @@ defineExpose({ refresh })
 .sentinel {
   height: 1px;
 }
+
+@media (min-width: 1200px) {
+  .feed {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: 40px;
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 40px;
+  }
+
+  .feed-head {
+    grid-column: 1 / -1;
+    padding: 18px 0 14px;
+    font-size: 10.5px;
+  }
+
+  .feed :deep(.story.featured) {
+    grid-column: 1 / -1;
+  }
+
+  .feed :deep(.footer) {
+    grid-column: 1 / -1;
+  }
+}
 </style>

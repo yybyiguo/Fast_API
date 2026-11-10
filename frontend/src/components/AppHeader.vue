@@ -92,4 +92,16 @@ h1 {
   min-width: 34px;
   height: 34px;
 }
+
+@media (min-width: 960px) {
+  .topbar {
+    height: calc(60px + var(--safe-top));
+    border-top: 3px solid var(--red);
+    padding: var(--safe-top) 40px 0;
+  }
+
+  h1 {
+    font-size: 17px;
+  }
+}
 </style>

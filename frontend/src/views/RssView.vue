@@ -544,4 +544,32 @@ h1 {
 .ops button:active:not(:disabled) {
   background: var(--red-soft);
 }
+
+@media (min-width: 960px) {
+  .page-head {
+    padding: 24px 40px 22px;
+  }
+
+  .head-row h1 {
+    font-size: 44px;
+  }
+
+  .scroll {
+    width: 100%;
+    max-width: 940px;
+    margin: 0 auto;
+  }
+
+  .hint {
+    padding: 18px 24px 0;
+  }
+
+  .card {
+    margin: 20px 24px 0;
+  }
+
+  .list {
+    padding: 0 24px;
+  }
+}
 </style>

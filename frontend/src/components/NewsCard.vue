@@ -189,4 +189,50 @@ const indexLabel = computed(() => String(props.index + 1).padStart(2, '0'))
   height: 100%;
   object-fit: cover;
 }
+
+@media (min-width: 960px) {
+  .story {
+    padding: 22px 0;
+  }
+
+  .title {
+    font-size: 21px;
+  }
+
+  .desc {
+    font-size: 13.5px;
+  }
+
+  .featured {
+    padding: 30px 0 34px;
+  }
+
+  .featured .title {
+    font-size: clamp(38px, 4vw, 52px);
+  }
+
+  .featured .desc {
+    max-width: 860px;
+    font-size: 16px;
+    -webkit-line-clamp: 4;
+  }
+
+  .featured .thumb {
+    height: 360px;
+    margin-top: 22px;
+  }
+
+  .thumb {
+    width: 112px;
+    height: 84px;
+  }
+
+  .meta {
+    font-size: 11.5px;
+  }
+
+  .read-more {
+    font-size: 13px;
+  }
+}
 </style>

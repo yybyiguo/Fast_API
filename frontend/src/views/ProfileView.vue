@@ -979,4 +979,74 @@ function doLogout() {
 .sheet-leave-to .sheet {
   transform: translateY(100%);
 }
+
+@media (min-width: 960px) {
+  .profile-head {
+    padding: 24px 40px 30px;
+  }
+
+  .head-top,
+  .guest,
+  .me {
+    max-width: 900px;
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  .me {
+    align-items: center;
+  }
+
+  .avatar {
+    width: 80px;
+    height: 80px;
+    font-size: 32px;
+  }
+
+  .guest-avatar {
+    width: 64px;
+    height: 64px;
+  }
+
+  .me-info h2,
+  .guest h2 {
+    font-size: 44px;
+  }
+
+  .scroll {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .tab {
+    padding: 18px 20px 15px;
+  }
+
+  .tab b {
+    font-size: 40px;
+  }
+
+  .panel-head {
+    padding: 16px 18px 12px;
+  }
+
+  .list {
+    padding: 0 18px;
+  }
+
+  .account-actions {
+    padding: 28px 18px 0;
+  }
+
+  .logout {
+    display: block;
+    max-width: 320px;
+    margin: 0 auto;
+  }
+
+  .about {
+    padding-top: 38px;
+  }
+}
 </style>

@@ -415,4 +415,29 @@ form {
   letter-spacing: 0.16em;
   text-align: center;
 }
+
+@media (min-width: 960px) {
+  .login-scroll {
+    width: 100%;
+    max-width: 620px;
+    margin: 0 auto;
+    padding-bottom: 48px;
+  }
+
+  .intro {
+    padding-top: 40px;
+  }
+
+  .intro h1 {
+    font-size: 58px;
+  }
+
+  .card {
+    padding: 26px 24px 22px;
+  }
+
+  .colophon {
+    margin-top: 52px;
+  }
+}
 </style>

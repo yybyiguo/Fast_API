@@ -275,4 +275,36 @@ h1 {
     transform: translateX(100%);
   }
 }
+
+@media (min-width: 960px) {
+  .masthead {
+    padding: 18px 40px 0;
+    border-top-width: 4px;
+  }
+
+  .topline {
+    height: 34px;
+    font-size: 10.5px;
+  }
+
+  .brand {
+    padding: 26px 0 20px;
+  }
+
+  h1 {
+    font-size: 64px;
+    letter-spacing: -0.045em;
+  }
+
+  .brand p {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+  }
+
+  .section {
+    height: 48px;
+    padding: 0 20px;
+    font-size: 14px;
+  }
+}
 </style>
