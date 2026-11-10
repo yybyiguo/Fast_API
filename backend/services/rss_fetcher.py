@@ -93,16 +93,18 @@ def entry_time(entry: Any) -> datetime:
 
 
 def entry_image(entry: Any, base_url: str) -> str | None:
+    # 部分源（如 RSSHub 的抖音路由）会把 HTML 再转义一层，图片地址里会残留 &amp;，
+    # 直接落库会让浏览器把 amp; 当成参数名，所以统一反转义一次。
     for key in ("media_content", "media_thumbnail"):
         for media in entry.get(key) or []:
             if media.get("url"):
-                return urljoin(base_url, media["url"])
+                return urljoin(base_url, html.unescape(media["url"]))
     for enc in entry.get("enclosures") or []:
         if (enc.get("type") or "").startswith("image/") and enc.get("href"):
-            return urljoin(base_url, enc["href"])
+            return urljoin(base_url, html.unescape(enc["href"]))
     body = (entry.get("content") or [{}])[0].get("value") or entry.get("summary") or ""
     match = re.search(r'<img[^>]+src=["\']([^"\']+)', body, re.I)
-    return urljoin(base_url, match.group(1)) if match else None
+    return urljoin(base_url, html.unescape(match.group(1))) if match else None
 
 
 def _normalize(parsed: Any, feed: RssFeed, limit: int) -> list[dict[str, Any]]:

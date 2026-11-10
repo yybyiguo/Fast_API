@@ -133,6 +133,9 @@ services:
       - .env.docker
     ports:
       - "1200:1200"
+    volumes:
+      # 上游 /douyin/user 路由不读 DOUYIN_COOKIE，用打完补丁的产物覆盖（详见该文件头部注释）
+      - ./docker/rsshub-patch/douyin-user.mjs:/app/dist/douyin-user-CbGBraE0.mjs:ro
 
 volumes:
   mysql_data:

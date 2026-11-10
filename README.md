@@ -105,6 +105,9 @@ docker compose --profile observability up -d
 
 - 配置在根目录 `.env.docker`，字段说明见 `.env.example`；生产环境务必改密码
 - 抖音等需要浏览器渲染的路由使用 `chromium-bundled` 镜像，并需要 `DOUYIN_COOKIE`（登录后从浏览器复制，见 `.env.example`）
+- 上游 `/douyin/user` 路由不会读取 `DOUYIN_COOKIE`，匿名请求会被抖音 WAF 拦成 503。
+  compose 用 `docker/rsshub-patch/douyin-user.mjs` 覆盖容器里的同名产物，把 cookie 注入浏览器上下文；
+  升级 RSSHub 镜像后该文件名（`douyin-user-*.mjs`）会变，需要同步改 `docker-compose.yml` 里的挂载路径
 - 日志：容器里 `LOG_TO_FILE=0`，统一走 stdout，用 `docker compose logs -f api` 查看；
   需要落文件就改成 `1` 并给容器挂载 `/app/logs`
 - `/healthz` 只探进程存活；`/readyz` 检查 MySQL（必须）和 Redis（挂了返回 `degraded` 但仍 200）
