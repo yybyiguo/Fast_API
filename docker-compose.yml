@@ -126,7 +126,11 @@ services:
     profiles: [ "observability" ]
 
   rsshub:
-    image: diygod/rsshub
+    # 抖音等需要浏览器渲染的路由必须用带 Chromium 的镜像
+    image: diygod/rsshub:chromium-bundled
+    # 抖音路由需要 DOUYIN_COOKIE，和其它容器共用 .env.docker
+    env_file:
+      - .env.docker
     ports:
       - "1200:1200"
 
