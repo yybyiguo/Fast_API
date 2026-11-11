@@ -14,6 +14,7 @@ from models.user import User
 from schemas.rss import RssFeedIn, RssFeedOut, RssFeedPatch
 from services.rss_fetcher import USER_AGENT, assert_public_http_url, parse_entries
 from utils.auth import require_rss_admin
+from utils.request_context import get_request_id
 from utils.response import success_response
 
 logger = logging.getLogger(__name__)
@@ -76,7 +77,7 @@ async def create_feed(
     try:
         from tasks.rss_tasks import fetch_feed as fetch_feed_task
 
-        fetch_feed_task.delay(feed.id)
+        fetch_feed_task.delay(feed.id, get_request_id())
     except Exception:
         logger.warning("新源入队失败 feed_id=%s", feed.id)
 
@@ -149,7 +150,7 @@ async def refresh_feed(
         raise HTTPException(status_code=404, detail="源不存在")
     from tasks.rss_tasks import fetch_feed as fetch_feed_task
 
-    task = fetch_feed_task.delay(feed_id)
+    task = fetch_feed_task.delay(feed.id, get_request_id())
     return success_response(message="已入队", data={"taskId": task.id})
 
 

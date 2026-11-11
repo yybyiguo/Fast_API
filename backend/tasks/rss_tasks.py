@@ -24,6 +24,7 @@ from models.news import News
 from models.rss import RssFeed
 from services.rss_fetcher import CST, USER_AGENT, fetch_and_store
 from tasks.celery_app import celery_app
+from utils.request_context import reset_request_id, set_request_id
 
 logger = logging.getLogger(__name__)
 
@@ -151,20 +152,28 @@ async def _run(feed_id: int | None = None) -> dict:
 
 @celery_app.task(name="tasks.rss_tasks.fetch_due_feeds")
 def fetch_due_feeds() -> dict:
+    token = set_request_id(f"cron-{secrets.token_hex(4)}")
     try:
         return asyncio.run(_run())
     except Exception:
         logger.exception("RSS 定时抓取失败")
         return {"due": 0, "inserted": 0, "failed": 1}
+    finally:
+        reset_request_id(token)
 
 
 @celery_app.task(name="tasks.rss_tasks.fetch_feed")
-def fetch_feed(feed_id: int) -> dict:
+def fetch_feed(feed_id: int, request_id: str | None = None) -> dict:
+    # 手动刷新会带 API 的单号；定时任务没有，就自己造一个
+    rid = request_id if request_id and request_id != "-" else f"task-{secrets.token_hex(4)}"
+    token = set_request_id(rid)
     try:
         return asyncio.run(_run(feed_id))
     except Exception:
         logger.exception("RSS 单源抓取失败 feed_id=%s", feed_id)
         return {"due": 0, "inserted": 0, "failed": 1}
+    finally:
+        reset_request_id(token)
 
 
 async def _clean_old(days: int) -> int:

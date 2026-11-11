@@ -12,12 +12,29 @@ beat 必须是单实例，worker 可以有多个。
 """
 
 import logging
+import os
+import sys
 
 from celery import Celery
+from celery.signals import setup_logging as celery_setup_logging
 
 from config.db_config import settings
+from utils.logging import setup_logging
 
 logger = logging.getLogger(__name__)
+
+
+def _service_name() -> str:
+    # beat 和 worker 用的是同一个模块，靠命令行参数区分
+    return "beat" if "beat" in sys.argv else "worker"
+
+
+# 在 Celery 的“门铃”里接管日志配置，否则会被它启动时的默认配置覆盖
+@celery_setup_logging.connect
+def _configure_logging(loglevel=None, **_kwargs):
+    os.environ.setdefault("SERVICE_NAME", _service_name())
+    setup_logging(level=loglevel)
+
 
 # 用不同的 Redis db 隔离，避免和业务缓存（db 0）的 key 打架
 BROKER_URL = f"redis://{settings.redis_host}:{settings.redis_port}/1"

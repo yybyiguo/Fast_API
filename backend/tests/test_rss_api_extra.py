@@ -87,11 +87,13 @@ async def test_refresh_enqueues_task(client, auth, monkeypatch, category):
 
     from tasks import rss_tasks
 
-    monkeypatch.setattr(
-        rss_tasks,
-        "fetch_feed",
-        SimpleNamespace(delay=lambda feed_id: SimpleNamespace(id="task-1")),
-    )
+    calls = []
+
+    def fake_delay(feed_id, request_id=None):
+        calls.append((feed_id, request_id))
+        return SimpleNamespace(id="task-1")
+
+    monkeypatch.setattr(rss_tasks, "fetch_feed", SimpleNamespace(delay=fake_delay))
 
     response = await client.post(
         f"/api/rss/feeds/{feed['id']}/refresh",
@@ -100,6 +102,9 @@ async def test_refresh_enqueues_task(client, auth, monkeypatch, category):
 
     assert response.status_code == 200, response.text
     assert response.json()["data"]["taskId"] == "task-1"
+    # 入队时要把当前请求的单号一起带过去，后台日志才和这次请求对得上
+    assert calls == [(feed["id"], calls[0][1])]
+    assert calls[0][1] != "-"
 
 
 async def test_preview_returns_entries(client, auth, monkeypatch):
