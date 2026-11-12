@@ -101,3 +101,47 @@ async def test_success_resets_only_user_counter(client, auth, monkeypatch):
 
     assert response.status_code == 200
     assert reset_keys == ["login:fail:127.0.0.1:alice"]
+
+
+async def test_register_locked_returns_429(client, monkeypatch):
+    async def _state(key: str):
+        return (3, 1800)
+
+    monkeypatch.setattr("utils.rate_limit.state", _state)
+
+    response = await client.post(
+        "/api/user/register",
+        json={"username": "bob", "password": "secret123"},
+    )
+
+    assert response.status_code == 429
+    assert response.headers["retry-after"] == "1800"
+
+
+async def test_register_counts_only_success(client, monkeypatch):
+    calls: list[tuple[str, int]] = []
+
+    async def _state(key: str):
+        return (0, 0)
+
+    async def _hit(key: str, window: int = 900):
+        calls.append((key, window))
+        return (1, 3600)
+
+    monkeypatch.setattr("utils.rate_limit.state", _state)
+    monkeypatch.setattr("utils.rate_limit.hit", _hit)
+
+    created = await client.post(
+        "/api/user/register",
+        json={"username": "bob", "password": "secret123"},
+    )
+    assert created.status_code == 200
+    assert calls == [("register:ip:127.0.0.1", 3600)]
+
+    # 重复用户名失败，不应该再消耗额度
+    duplicate = await client.post(
+        "/api/user/register",
+        json={"username": "bob", "password": "secret123"},
+    )
+    assert duplicate.status_code == 400
+    assert len(calls) == 1

@@ -24,6 +24,10 @@ USER_LIMIT = 5
 IP_LIMIT = 20
 WINDOW = 15 * 60
 
+# 注册：同一个来源每小时最多建 3 个账号
+REGISTER_LIMIT = 3
+REGISTER_WINDOW = 60 * 60
+
 # KEYS[1] 是计数器，ARGV[1] 是窗口秒数；返回 {当前次数, 剩余秒数}
 _HIT_LUA = """
 local count = redis.call('INCR', KEYS[1])
@@ -54,6 +58,11 @@ def user_key(ip: str, username: str) -> str:
 
 def ip_key(ip: str) -> str:
     return f"login:fail:ip:{ip}"
+
+
+def register_key(ip: str) -> str:
+    # 和登录的 key 分开：一个数“失败”，一个数“成功建号”，语义不能混
+    return f"register:ip:{ip}"
 
 
 async def hit(key: str, window: int = WINDOW) -> tuple[int, int]:

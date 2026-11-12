@@ -33,13 +33,31 @@ def _too_many(retry_after: int) -> HTTPException:
 
 
 @router.post("/register")
-async def register(userData: UserRequest, db: AsyncSession = Depends(get_db)):
+async def register(
+    userData: UserRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    ip = rate_limit.client_ip(request)
+    key = rate_limit.register_key(ip)
+
+    # 先看这个来源今天是不是造得太多了
+    count, ttl = await rate_limit.state(key)
+    if count >= rate_limit.REGISTER_LIMIT:
+        logger.warning("注册被限流 ip=%s count=%s", ip, count)
+        raise _too_many(rate_limit.retry_after_seconds(ttl))
+
     existing_user = await user.get_user_by_username(db, userData.username)
     if existing_user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="该用户已经存在")
     users = await user.create_user(db, userData)
     token = await user.create_token(db, users.id)
     await db.commit()
+
+    # 只有真的建出账号才计数：重复用户名、参数不合法不该消耗额度，
+    # 否则别人可以故意发失败请求，把同一个出口 IP 下所有人的注册额度烧光。
+    await rate_limit.hit(key, rate_limit.REGISTER_WINDOW)
+
     return success_response(
         message="注册成功",
         data=userAuthResponse(token=token, userInfo=userInfoResponse.model_validate(users)),
