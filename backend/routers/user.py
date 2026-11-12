@@ -16,6 +16,7 @@ from schemas.users import (
 )
 from utils import auth, rate_limit
 from utils.response import success_response
+from utils.traffic import limit
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +33,7 @@ def _too_many(retry_after: int) -> HTTPException:
     )
 
 
-@router.post("/register")
+@router.post("/register", dependencies=[Depends(limit("auth", 10, 60))])
 async def register(
     userData: UserRequest,
     request: Request,
@@ -67,7 +68,7 @@ async def register(
     )
 
 
-@router.post("/login")
+@router.post("/login", dependencies=[Depends(limit("auth", 10, 60))])
 async def login(
     user_data: UserRequest,
     request: Request,

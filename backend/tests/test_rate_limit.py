@@ -133,7 +133,11 @@ async def test_register_reserves_slot_before_creating(client, monkeypatch):
     )
 
     assert created.status_code == 200
-    assert reserved == [("register:ip:127.0.0.1", 3, 3600)]
+    # traffic limit 先于业务限流执行：auth 桶先占位，注册名额后占位
+    assert reserved == [
+        ("rl:auth:127.0.0.1", 10, 60),
+        ("register:ip:127.0.0.1", 3, 3600),
+    ]
 
 
 async def test_register_releases_slot_when_creation_fails(client, monkeypatch):
