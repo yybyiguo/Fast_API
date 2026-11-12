@@ -1,15 +1,28 @@
 <script setup>
-import { computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import SideNav from './components/SideNav.vue'
 import TabBar from './components/TabBar.vue'
 import ToastHost from './components/ToastHost.vue'
 import { useAuth } from './stores/auth'
 
 const route = useRoute()
+const router = useRouter()
 const auth = useAuth()
 
 const showSideNav = computed(() => route.name !== 'login')
+
+watch(
+  () => auth.isLoggedIn.value,
+  (loggedIn) => {
+    if (!loggedIn && route.name !== 'login') {
+      router.replace({
+        name: 'login',
+        query: route.fullPath && route.fullPath !== '/' ? { redirect: route.fullPath } : {}
+      })
+    }
+  }
+)
 
 onMounted(() => {
   // 用本地 token 校验一次登录态，失败会自动清掉
