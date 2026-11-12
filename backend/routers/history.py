@@ -10,8 +10,13 @@ from models.user import User
 from schemas.history import HistoryListResponse
 from utils import auth
 from utils.response import success_response
+from utils.traffic import limit
 
-router = APIRouter(prefix="/api/history", tags=["history"])
+router = APIRouter(
+    prefix="/api/history",
+    tags=["history"],
+    dependencies=[Depends(limit("history", 120, 60))],
+)
 
 
 @router.post("/add_history")

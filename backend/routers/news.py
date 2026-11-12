@@ -4,8 +4,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from cache import view_counter
 from config.db_config import get_db
 from curd import news
+from utils.traffic import limit
 
-router = APIRouter(prefix="/api/news", tags=["news"])
+router = APIRouter(
+    prefix="/api/news",
+    tags=["news"],
+    dependencies=[Depends(limit("news", 120, 60))],
+)
 
 
 @router.get("/categories")

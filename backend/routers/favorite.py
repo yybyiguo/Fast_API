@@ -8,8 +8,13 @@ from models.user import User
 from schemas.favorite import FavoriteCheckResponse, FavoriteListResponse
 from utils import auth
 from utils.response import success_response
+from utils.traffic import limit
 
-router = APIRouter(prefix="/api/favorite", tags=["favorite"])
+router = APIRouter(
+    prefix="/api/favorite",
+    tags=["favorite"],
+    dependencies=[Depends(limit("favorite", 60, 60))],
+)
 
 
 @router.get("/check")

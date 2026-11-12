@@ -16,10 +16,15 @@ from services.rss_fetcher import USER_AGENT, assert_public_http_url, parse_entri
 from utils.auth import require_rss_admin
 from utils.request_context import get_request_id
 from utils.response import success_response
+from utils.traffic import limit
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/rss", tags=["rss"])
+router = APIRouter(
+    prefix="/api/rss",
+    tags=["rss"],
+    dependencies=[Depends(limit("rss", 30, 60))],
+)
 
 
 async def _check_url(url: str) -> str:
