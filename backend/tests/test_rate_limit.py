@@ -1,8 +1,13 @@
 """登录失败限流：被锁、计数、清零、取真实 IP。"""
 
+from prometheus_client import REGISTRY
 from starlette.requests import Request
 
 from utils.rate_limit import client_ip
+
+
+def _rejected(bucket: str) -> float:
+    return REGISTRY.get_sample_value("rate_limit_rejected_total", {"bucket": bucket}) or 0
 
 
 def _request(headers: dict[str, str] | None = None, client: tuple[str, int] | None = None):
@@ -29,6 +34,7 @@ async def test_login_locked_returns_429(client, auth, monkeypatch):
         return (0, 0) if key.startswith("login:fail:ip:") else (5, 600)
 
     monkeypatch.setattr("utils.rate_limit.state", _locked)
+    before = _rejected("login")
 
     response = await client.post(
         "/api/user/login",
@@ -38,6 +44,7 @@ async def test_login_locked_returns_429(client, auth, monkeypatch):
     assert response.status_code == 429
     assert response.headers["retry-after"] == "600"
     assert "分钟后再试" in response.json()["message"]
+    assert _rejected("login") == before + 1
 
 
 async def test_wrong_password_hits_both_counters(client, auth, monkeypatch):
@@ -105,9 +112,13 @@ async def test_success_resets_only_user_counter(client, auth, monkeypatch):
 
 async def test_register_locked_returns_429(client, monkeypatch):
     async def _reserve(key: str, limit: int, window: int):
+        # 路由上的 auth 桶放行，注册桶拒绝，才能真正走到注册自己的 429
+        if key.startswith("rl:auth:"):
+            return (True, 0)
         return (False, 1800)
 
     monkeypatch.setattr("utils.rate_limit.reserve", _reserve)
+    before = _rejected("register")
 
     response = await client.post(
         "/api/user/register",
@@ -116,6 +127,7 @@ async def test_register_locked_returns_429(client, monkeypatch):
 
     assert response.status_code == 429
     assert response.headers["retry-after"] == "1800"
+    assert _rejected("register") == before + 1
 
 
 async def test_register_reserves_slot_before_creating(client, monkeypatch):

@@ -22,7 +22,7 @@ const canSubmit = computed(
 )
 
 onMounted(() => {
-  if (auth.isLoggedIn.value) router.replace('/profile')
+  if (auth.isLoggedIn.value) router.replace('/')
 })
 
 watch(mode, () => {
@@ -34,9 +34,9 @@ function switchMode(next) {
   mode.value = next
 }
 
-function goBack() {
-  if (window.history.length > 1) router.back()
-  else router.push('/')
+// 后端 429 会带 Retry-After（秒），直接告诉用户还要等多久
+function waitText(seconds) {
+  return seconds >= 60 ? `${Math.ceil(seconds / 60)} 分钟` : `${seconds} 秒`
 }
 
 async function submit() {
@@ -60,11 +60,21 @@ async function submit() {
 
     toast.success(isRegister.value ? '注册成功' : '登录成功')
 
-    let redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/profile'
-    if (!redirect.startsWith('/') || redirect.startsWith('/login')) redirect = '/profile'
+    let redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/'
+    if (
+      !redirect.startsWith('/') ||
+      redirect.startsWith('//') ||
+      redirect.startsWith('/login')
+    ) {
+      redirect = '/'
+    }
     router.replace(redirect)
   } catch (error) {
-    errorMsg.value = error.message || '操作失败，请稍后再试'
+    if (error.status === 429 && error.retryAfter) {
+      errorMsg.value = `请求过于频繁，请 ${waitText(error.retryAfter)}后再试`
+    } else {
+      errorMsg.value = error.message || '操作失败，请稍后再试'
+    }
   } finally {
     submitting.value = false
   }
@@ -75,18 +85,6 @@ async function submit() {
   <div class="page login">
     <div class="login-scroll">
       <div class="topbar">
-        <button type="button" class="back" aria-label="返回" @click="goBack">
-          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-            <path
-              d="M14.5 5 8 12l6.5 7"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-        </button>
         <span class="kicker no-rule">MEMBER ACCESS</span>
         <span class="est">EST. 2026</span>
       </div>
@@ -170,11 +168,6 @@ async function submit() {
           {{ isRegister ? '注册后会自动登录，密码由后端加密存储' : '还没有账号？切换到「注册」创建一个' }}
         </p>
       </div>
-
-      <button type="button" class="skip" @click="router.push('/')">
-        先随便逛逛
-        <span aria-hidden="true">→</span>
-      </button>
 
       <p class="colophon">今日资讯 · MOBILE EDITION</p>
     </div>

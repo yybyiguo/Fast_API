@@ -10,7 +10,7 @@ from collections.abc import Callable
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from prometheus_client import Gauge
+from prometheus_client import Counter, Gauge
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -31,6 +31,13 @@ RSS_NEVER = Gauge("toutiao_rss_feeds_never", "从未抓取过的源数量")
 RSS_LAST_SUCCESS = Gauge(
     "toutiao_rss_last_success_timestamp",
     "最近一次成功抓取的时间戳（Unix 秒）",
+)
+
+# 被限流拒绝的请求数。label 只用“桶名”，不要用 IP（基数太大）
+RATE_LIMIT_REJECTED = Counter(
+    "rate_limit_rejected_total",
+    "被限流拒绝的请求数",
+    ["bucket"],
 )
 
 SessionFactory = Callable[[], AsyncSession]

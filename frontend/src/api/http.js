@@ -2,12 +2,14 @@ const API_BASE = (import.meta.env.VITE_API_BASE || '').replace(/\/$/, '')
 const TOKEN_KEY = 'toutiao_token'
 
 export class ApiError extends Error {
-  constructor(message, { status = 0, code = 0, data = null } = {}) {
+  constructor(message, { status = 0, code = 0, data = null, retryAfter = 0 } = {}) {
     super(message)
     this.name = 'ApiError'
     this.status = status
     this.code = code
     this.data = data
+    // 429 时后端会带 Retry-After（秒）；Nginx 那层没有，所以可能是 0
+    this.retryAfter = retryAfter
   }
 }
 
@@ -127,10 +129,14 @@ export async function request(
       if (!message && Array.isArray(data?.detail)) message = formatValidation(data.detail)
       if (!message && typeof data?.detail === 'string') message = data.detail
 
+      // Retry-After 是“秒”形式的字符串；读不到就是 0（比如 Nginx 直接拒的 429）
+      const retryAfter = Number(response.headers.get('Retry-After')) || 0
+
       throw new ApiError(message || `请求失败（${response.status}）`, {
         status: response.status,
         code: data?.code || response.status,
-        data
+        data,
+        retryAfter
       })
     }
 

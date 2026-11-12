@@ -9,10 +9,15 @@
 每次进来都占一个名额；被挡住的请求连路由函数都不会进。
 """
 
+import logging
+
 from fastapi import HTTPException, Request
 
 from utils import rate_limit
+from utils.metrics import RATE_LIMIT_REJECTED
 from utils.rate_limit import client_ip
+
+logger = logging.getLogger(__name__)
 
 
 def limit(bucket: str, limit: int, window: int):
@@ -28,6 +33,14 @@ def limit(bucket: str, limit: int, window: int):
         # 复用注册那套“原子占位”：并发时也不会多放行
         allowed, ttl = await rate_limit.reserve(key, limit, window)
         if not allowed:
+            RATE_LIMIT_REJECTED.labels(bucket=bucket).inc()
+            logger.warning(
+                "接口限流 ip=%s bucket=%s limit=%s/%ss",
+                ip,
+                bucket,
+                limit,
+                window,
+            )
             raise HTTPException(
                 status_code=429,
                 detail="请求过于频繁，请稍后再试",

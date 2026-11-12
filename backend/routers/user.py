@@ -15,6 +15,7 @@ from schemas.users import (
     userUpdateRequest,
 )
 from utils import auth, rate_limit
+from utils.metrics import RATE_LIMIT_REJECTED
 from utils.response import success_response
 from utils.traffic import limit
 
@@ -23,8 +24,9 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/user", tags=["user"])
 
 
-def _too_many(retry_after: int) -> HTTPException:
+def _too_many(retry_after: int, bucket: str) -> HTTPException:
     """统一的 429 响应：告诉客户端等多久再试。"""
+    RATE_LIMIT_REJECTED.labels(bucket=bucket).inc()
     minutes = max(retry_after // 60, 1)
     return HTTPException(
         status_code=status.HTTP_429_TOO_MANY_REQUESTS,
@@ -48,7 +50,7 @@ async def register(
     )
     if not allowed:
         logger.warning("注册被限流 ip=%s", ip)
-        raise _too_many(rate_limit.retry_after_seconds(ttl))
+        raise _too_many(rate_limit.retry_after_seconds(ttl), "register")
 
     try:
         existing_user = await user.get_user_by_username(db, userData.username)
@@ -90,7 +92,7 @@ async def login(
             ucount,
             icount,
         )
-        raise _too_many(retry)
+        raise _too_many(retry, "login")
 
     isuser = await user.authenticate_user(db, user_data.username, user_data.password)
     if not isuser:
@@ -105,7 +107,7 @@ async def login(
         )
         # 刚好达到阈值时直接返回 429：告诉客户端再试也没用，别继续撞
         if ucount >= rate_limit.USER_LIMIT or icount >= rate_limit.IP_LIMIT:
-            raise _too_many(rate_limit.retry_after_seconds(uttl, ittl))
+            raise _too_many(rate_limit.retry_after_seconds(uttl, ittl), "login")
         raise HTTPException(status_code=401, detail="用户或密码错误")
 
     # 登录成功：清掉“这个来源 + 这个账号”的失败计数；按 IP 的总量保留，它记的是整体坏行为
