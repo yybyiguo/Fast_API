@@ -41,22 +41,25 @@ async def register(
     ip = rate_limit.client_ip(request)
     key = rate_limit.register_key(ip)
 
-    # 先看这个来源今天是不是造得太多了
-    count, ttl = await rate_limit.state(key)
-    if count >= rate_limit.REGISTER_LIMIT:
-        logger.warning("注册被限流 ip=%s count=%s", ip, count)
+    # 原子地“检查 + 占一个名额”：并发时也最多只有 3 个请求能占到
+    allowed, ttl = await rate_limit.reserve(
+        key, rate_limit.REGISTER_LIMIT, rate_limit.REGISTER_WINDOW
+    )
+    if not allowed:
+        logger.warning("注册被限流 ip=%s", ip)
         raise _too_many(rate_limit.retry_after_seconds(ttl))
 
-    existing_user = await user.get_user_by_username(db, userData.username)
-    if existing_user:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="该用户已经存在")
-    users = await user.create_user(db, userData)
-    token = await user.create_token(db, users.id)
-    await db.commit()
-
-    # 只有真的建出账号才计数：重复用户名、参数不合法不该消耗额度，
-    # 否则别人可以故意发失败请求，把同一个出口 IP 下所有人的注册额度烧光。
-    await rate_limit.hit(key, rate_limit.REGISTER_WINDOW)
+    try:
+        existing_user = await user.get_user_by_username(db, userData.username)
+        if existing_user:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="该用户已经存在")
+        users = await user.create_user(db, userData)
+        token = await user.create_token(db, users.id)
+        await db.commit()
+    except Exception:
+        # 建号失败：把刚才占的名额还回去，失败请求不消耗额度
+        await rate_limit.release(key)
+        raise
 
     return success_response(
         message="注册成功",

@@ -104,10 +104,10 @@ async def test_success_resets_only_user_counter(client, auth, monkeypatch):
 
 
 async def test_register_locked_returns_429(client, monkeypatch):
-    async def _state(key: str):
-        return (3, 1800)
+    async def _reserve(key: str, limit: int, window: int):
+        return (False, 1800)
 
-    monkeypatch.setattr("utils.rate_limit.state", _state)
+    monkeypatch.setattr("utils.rate_limit.reserve", _reserve)
 
     response = await client.post(
         "/api/user/register",
@@ -118,30 +118,48 @@ async def test_register_locked_returns_429(client, monkeypatch):
     assert response.headers["retry-after"] == "1800"
 
 
-async def test_register_counts_only_success(client, monkeypatch):
-    calls: list[tuple[str, int]] = []
+async def test_register_reserves_slot_before_creating(client, monkeypatch):
+    reserved: list[tuple[str, int, int]] = []
 
-    async def _state(key: str):
-        return (0, 0)
+    async def _reserve(key: str, limit: int, window: int):
+        reserved.append((key, limit, window))
+        return (True, 3600)
 
-    async def _hit(key: str, window: int = 900):
-        calls.append((key, window))
-        return (1, 3600)
+    monkeypatch.setattr("utils.rate_limit.reserve", _reserve)
 
-    monkeypatch.setattr("utils.rate_limit.state", _state)
-    monkeypatch.setattr("utils.rate_limit.hit", _hit)
+    created = await client.post(
+        "/api/user/register",
+        json={"username": "bob", "password": "secret123"},
+    )
+
+    assert created.status_code == 200
+    assert reserved == [("register:ip:127.0.0.1", 3, 3600)]
+
+
+async def test_register_releases_slot_when_creation_fails(client, monkeypatch):
+    released: list[str] = []
+
+    async def _reserve(key: str, limit: int, window: int):
+        return (True, 3600)
+
+    async def _release(key: str):
+        released.append(key)
+
+    monkeypatch.setattr("utils.rate_limit.reserve", _reserve)
+    monkeypatch.setattr("utils.rate_limit.release", _release)
 
     created = await client.post(
         "/api/user/register",
         json={"username": "bob", "password": "secret123"},
     )
     assert created.status_code == 200
-    assert calls == [("register:ip:127.0.0.1", 3600)]
+    # 成功不归还
+    assert released == []
 
-    # 重复用户名失败，不应该再消耗额度
+    # 重复用户名：占位的名额要还回去
     duplicate = await client.post(
         "/api/user/register",
         json={"username": "bob", "password": "secret123"},
     )
     assert duplicate.status_code == 400
-    assert len(calls) == 1
+    assert released == ["register:ip:127.0.0.1"]

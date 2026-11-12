@@ -37,6 +37,31 @@ end
 return {count, redis.call('TTL', KEYS[1])}
 """
 
+# 原子地“检查 + 占位”：没超限才加一，超了原样返回 0。
+# 拆成“先 GET 再 INCR”两步的话，两个并发请求会同时看到 2，都以为没到 3，
+# 结果建出 4 个账号。
+_RESERVE_LUA = """
+local current = tonumber(redis.call('GET', KEYS[1]) or '0')
+if current >= tonumber(ARGV[1]) then
+    return {0, redis.call('TTL', KEYS[1])}
+end
+local count = redis.call('INCR', KEYS[1])
+if count == 1 then
+    redis.call('EXPIRE', KEYS[1], ARGV[2])
+end
+return {1, redis.call('TTL', KEYS[1])}
+"""
+
+# 归还一个名额：建号失败时把刚才占的减回去，减到 0 就删 key
+_RELEASE_LUA = """
+local current = tonumber(redis.call('GET', KEYS[1]) or '0')
+if current <= 1 then
+    redis.call('DEL', KEYS[1])
+    return 0
+end
+return redis.call('DECR', KEYS[1])
+"""
+
 
 def client_ip(request: Request) -> str:
     """取请求来源 IP。
@@ -87,6 +112,29 @@ async def state(key: str) -> tuple[int, int]:
     except Exception:
         logger.warning("登录限流状态读取失败，放行本次 key=%s", key, exc_info=True)
         return 0, 0
+
+
+async def reserve(key: str, limit: int, window: int) -> tuple[bool, int]:
+    """原子地“检查并占一个名额”，返回 (是否占到, 剩余秒数)。
+
+    占到名额后如果业务失败（比如用户名重复），必须调用 release 归还，
+    否则失败请求会白白消耗额度。
+    """
+    try:
+        allowed, ttl = await redis_client.eval(_RESERVE_LUA, 1, key, limit, window)
+        return bool(int(allowed)), max(int(ttl), 0)
+    except Exception:
+        # Redis 挂了就放行：限流是增强，不能把注册整个挡死
+        logger.warning("限流占位失败，放行本次 key=%s", key, exc_info=True)
+        return True, 0
+
+
+async def release(key: str) -> None:
+    """归还一个名额。"""
+    try:
+        await redis_client.eval(_RELEASE_LUA, 1, key)
+    except Exception:
+        logger.warning("限流名额归还失败 key=%s", key, exc_info=True)
 
 
 async def reset(key: str) -> None:
