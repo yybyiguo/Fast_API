@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException
+import logging
+
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
@@ -12,10 +14,22 @@ from schemas.users import (
     userInfoResponse,
     userUpdateRequest,
 )
-from utils import auth
+from utils import auth, rate_limit
 from utils.response import success_response
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/api/user", tags=["user"])
+
+
+def _too_many(retry_after: int) -> HTTPException:
+    """统一的 429 响应：告诉客户端等多久再试。"""
+    minutes = max(retry_after // 60, 1)
+    return HTTPException(
+        status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+        detail=f"尝试次数过多，请 {minutes} 分钟后再试",
+        headers={"Retry-After": str(retry_after)},
+    )
 
 
 @router.post("/register")
@@ -33,10 +47,47 @@ async def register(userData: UserRequest, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/login")
-async def login(user_data: UserRequest, db: AsyncSession = Depends(get_db)):
+async def login(
+    user_data: UserRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    ip = rate_limit.client_ip(request)
+    ukey = rate_limit.user_key(ip, user_data.username)
+    ikey = rate_limit.ip_key(ip)
+
+    # 先看有没有被锁，再校验密码：锁住时直接 429，不让 bcrypt 白白消耗 CPU
+    ucount, uttl = await rate_limit.state(ukey)
+    icount, ittl = await rate_limit.state(ikey)
+    if ucount >= rate_limit.USER_LIMIT or icount >= rate_limit.IP_LIMIT:
+        retry = rate_limit.retry_after_seconds(uttl, ittl)
+        logger.warning(
+            "登录被限流 ip=%s username=%s ucount=%s icount=%s",
+            ip,
+            user_data.username,
+            ucount,
+            icount,
+        )
+        raise _too_many(retry)
+
     isuser = await user.authenticate_user(db, user_data.username, user_data.password)
     if not isuser:
+        ucount, uttl = await rate_limit.hit(ukey)
+        icount, ittl = await rate_limit.hit(ikey)
+        logger.warning(
+            "登录失败 ip=%s username=%s ucount=%s icount=%s",
+            ip,
+            user_data.username,
+            ucount,
+            icount,
+        )
+        # 刚好达到阈值时直接返回 429：告诉客户端再试也没用，别继续撞
+        if ucount >= rate_limit.USER_LIMIT or icount >= rate_limit.IP_LIMIT:
+            raise _too_many(rate_limit.retry_after_seconds(uttl, ittl))
         raise HTTPException(status_code=401, detail="用户或密码错误")
+
+    # 登录成功：清掉“这个来源 + 这个账号”的失败计数；按 IP 的总量保留，它记的是整体坏行为
+    await rate_limit.reset(ukey)
     token = await user.create_token(db, isuser.id)
     response_data = userAuthResponse(token=token, userInfo=userInfoResponse.model_validate(isuser))
     await db.commit()

@@ -268,6 +268,14 @@ def disable_external_services(monkeypatch) -> None:
     monkeypatch.setattr("cache.view_counter.increase", _noop)
     monkeypatch.setattr("cache.view_counter.pending", _zero)
 
+    # 登录限流也依赖 Redis：默认放行，专门的用例再自己覆盖这几个函数
+    async def _allow(*args, **kwargs):
+        return (0, 0)
+
+    monkeypatch.setattr("utils.rate_limit.state", _allow)
+    monkeypatch.setattr("utils.rate_limit.hit", _allow)
+    monkeypatch.setattr("utils.rate_limit.reset", _noop)
+
 
 @pytest.fixture
 async def auth(client) -> dict:
