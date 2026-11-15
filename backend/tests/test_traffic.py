@@ -61,3 +61,24 @@ async def test_rejection_increments_metric(client, monkeypatch):
     await client.get("/api/news/list", params={"page": 1, "pageSize": 5, "categoryId": 1})
 
     assert _sample("news") == before + 1
+
+
+async def test_authenticated_route_uses_user_bucket(client, auth, monkeypatch):
+    seen: list[str] = []
+
+    async def _reserve(key: str, limit: int, window: int):
+        seen.append(key)
+        # IP 桶放行，用户桶拒绝
+        return (False, 30) if ":u:" in key else (True, 0)
+
+    monkeypatch.setattr("utils.rate_limit.reserve", _reserve)
+
+    response = await client.get(
+        "/api/favorite/list",
+        params={"page": 1, "pageSize": 5},
+        headers=auth["headers"],
+    )
+
+    assert response.status_code == 429
+    assert response.headers["retry-after"] == "30"
+    assert "rl:favorite:u:1" in seen

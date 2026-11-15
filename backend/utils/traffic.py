@@ -11,9 +11,11 @@
 
 import logging
 
-from fastapi import HTTPException, Request
+from fastapi import Depends, HTTPException, Request
 
+from models.user import User
 from utils import rate_limit
+from utils.auth import get_current_user
 from utils.metrics import RATE_LIMIT_REJECTED
 from utils.rate_limit import client_ip
 
@@ -37,6 +39,34 @@ def limit(bucket: str, limit: int, window: int):
             logger.warning(
                 "接口限流 ip=%s bucket=%s limit=%s/%ss",
                 ip,
+                bucket,
+                limit,
+                window,
+            )
+            raise HTTPException(
+                status_code=429,
+                detail="请求过于频繁，请稍后再试",
+                headers={"Retry-After": str(max(ttl, 1))},
+            )
+
+    return _dependency
+
+
+def limit_user(bucket: str, limit: int, window: int):
+    """按登录用户限流，key 用 user_id。
+
+    和 limit() 的区别：同一个 NAT 后面的人不再共用额度，换 IP 也绕不过。
+    只能挂在“已经要求登录”的路由上；未登录请求会先被 get_current_user 挡成 401。
+    """
+
+    async def _dependency(user: User = Depends(get_current_user)) -> None:
+        key = f"rl:{bucket}:u:{user.id}"
+        allowed, ttl = await rate_limit.reserve(key, limit, window)
+        if not allowed:
+            RATE_LIMIT_REJECTED.labels(bucket=f"{bucket}:user").inc()
+            logger.warning(
+                "用户限流 user_id=%s bucket=%s limit=%s/%ss",
+                user.id,
                 bucket,
                 limit,
                 window,

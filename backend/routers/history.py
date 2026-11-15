@@ -10,12 +10,15 @@ from models.user import User
 from schemas.history import HistoryListResponse
 from utils import auth
 from utils.response import success_response
-from utils.traffic import limit
+from utils.traffic import limit, limit_user
 
 router = APIRouter(
     prefix="/api/history",
     tags=["history"],
-    dependencies=[Depends(limit("history", 120, 60))],
+    dependencies=[
+        Depends(limit("history", 360, 60)),
+        Depends(limit_user("history", 120, 60)),
+    ],
 )
 
 

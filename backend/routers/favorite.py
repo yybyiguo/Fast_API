@@ -8,12 +8,16 @@ from models.user import User
 from schemas.favorite import FavoriteCheckResponse, FavoriteListResponse
 from utils import auth
 from utils.response import success_response
-from utils.traffic import limit
+from utils.traffic import limit, limit_user
 
 router = APIRouter(
     prefix="/api/favorite",
     tags=["favorite"],
-    dependencies=[Depends(limit("favorite", 60, 60))],
+    dependencies=[
+        # 先按 IP 粗筛（防未登录刷），再按用户细筛（NAT 后面的人不互相挤占）
+        Depends(limit("favorite", 180, 60)),
+        Depends(limit_user("favorite", 60, 60)),
+    ],
 )
 
 
