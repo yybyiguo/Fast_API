@@ -15,6 +15,9 @@ repos:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
+        # compose 的 !reset / !override 是自定义标签，PyYAML 不认；
+        # 这类文件改用 `docker compose config` 校验。
+        exclude: ^docker-compose\.prod\.yml$
       - id: check-toml
       - id: check-merge-conflict
       - id: check-added-large-files

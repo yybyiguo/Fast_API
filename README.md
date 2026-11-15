@@ -114,6 +114,19 @@ docker compose --profile observability up -d
 - 应用指标：`http://127.0.0.1:8001/metrics`，Prometheus 抓 `api:8000/metrics` 和 `celery-exporter:9808`
 - 慢查询日志：`docker compose exec mysql cat /var/lib/mysql/slow.log`
 
+### 生产部署（只暴露 80）
+
+上面那套会把 mysql/redis/api/rsshub 的端口都映射到宿主机，方便本地调试。
+生产用覆盖文件关掉，只留 web 的 80：
+
+```powershell
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+```
+
+- Docker 发布端口会**绕过主机防火墙**，所以“服务器只开 80”要落在配置里，不能只靠 `ufw`；
+- API 不对外暴露后，Nginx 用 `$remote_addr` 覆盖 `X-Forwarded-For`，应用层拿到的 IP 才可信；
+- 如果以后在 Nginx 前面再加 CDN/负载均衡，需要启用 `real_ip` 模块还原真实客户端 IP。
+
 ## 测试
 
 ```powershell
