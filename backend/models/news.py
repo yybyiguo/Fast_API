@@ -38,6 +38,8 @@ class News(news_Base):
         Index("fk_news_category_idx", "category_id"),
         Index("idx_publish_time", "publish_time"),
         Index("idx_cat_publish", "category_id", "publish_time"),
+        # 相关推荐按 views 倒序取前 10，没这个索引会在分类内 filesort
+        Index("idx_cat_views", "category_id", "views"),
         UniqueConstraint("feed_id", "guid_hash", name="uk_news_feed_guid"),
     )
 
