@@ -54,3 +54,70 @@ async def test_detail_returns_source_url(client, make_news):
 async def test_detail_404(client):
     response = await client.get("/api/news/detail", params={"id": 999999})
     assert response.status_code == 404
+
+
+async def test_list_views_come_from_counter(client, make_news, monkeypatch):
+    news = await make_news(views=100)
+
+    async def fake_read_many(news_ids):
+        return [105 for _ in news_ids]
+
+    monkeypatch.setattr("cache.view_counter.read_many", fake_read_many)
+
+    response = await client.get(
+        "/api/news/list",
+        params={"categoryId": news.category_id, "page": 1, "pagesize": 10},
+    )
+
+    item = response.json()["data"]["list"][0]
+    assert item["views"] == 105
+    # 列表缓存只存正文投影，正文不进列表
+    assert "content" not in item
+
+
+async def test_detail_views_come_from_counter(client, make_news, monkeypatch):
+    news = await make_news(views=100)
+
+    async def fake_read(news_id):
+        return 105
+
+    async def fake_bump(news_id):
+        return 106
+
+    monkeypatch.setattr("cache.view_counter.read", fake_read)
+    monkeypatch.setattr("cache.view_counter.bump", fake_bump)
+
+    response = await client.get("/api/news/detail", params={"id": news.id})
+
+    assert response.status_code == 200, response.text
+    # 详情返回的是计数器自增后的值，不是数据库的 100
+    assert response.json()["data"]["views"] == 106
+
+
+async def test_detail_sets_x_cache_header(client, make_news, monkeypatch):
+    """同一个 id 第一次回源是 MISS，第二次走缓存是 HIT。"""
+    news = await make_news()
+    store = {}
+
+    async def fake_get(news_id):
+        return store.get(news_id)
+
+    async def fake_set(news_id, data, expire=None):
+        store[news_id] = data
+
+    monkeypatch.setattr("cache.news_cache.get_cache_detail", fake_get)
+    monkeypatch.setattr("cache.news_cache.set_cache_detail", fake_set)
+
+    first = await client.get("/api/news/detail", params={"id": news.id})
+    second = await client.get("/api/news/detail", params={"id": news.id})
+
+    assert first.headers["x-cache"] == "MISS"
+    assert second.headers["x-cache"] == "HIT"
+
+
+async def test_detail_404_sets_x_cache_header(client):
+    response = await client.get("/api/news/detail", params={"id": 999999})
+
+    assert response.status_code == 404
+    # raise 也要把 header 带出去，排障时才知道这次是回源确认的
+    assert response.headers["x-cache"] == "MISS"

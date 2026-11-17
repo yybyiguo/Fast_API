@@ -28,10 +28,8 @@ from collections.abc import AsyncIterator, Iterator  # noqa: E402
 
 import pymysql  # noqa: E402
 import pytest  # noqa: E402
-from alembic import command  # noqa: E402
 from alembic.config import Config  # noqa: E402
 from httpx import ASGITransport, AsyncClient  # noqa: E402
-from main import app  # noqa: E402
 from sqlalchemy import text  # noqa: E402
 from sqlalchemy.ext.asyncio import (  # noqa: E402
     AsyncSession,
@@ -40,7 +38,9 @@ from sqlalchemy.ext.asyncio import (  # noqa: E402
 )
 from sqlalchemy.pool import NullPool  # noqa: E402
 
+from alembic import command  # noqa: E402
 from config.db_config import DB_URL, get_db, settings  # noqa: E402
+from main import app  # noqa: E402
 from models.news import Category, News  # noqa: E402
 
 # config/db_config.py 里是 create_async_engine(echo=True)，不压日志，测试输出会被 SQL 淹没。
@@ -250,6 +250,7 @@ def disable_external_services(monkeypatch) -> None:
 
     注意 curd/news.py 是 from cache.news_cache import ... 的直接绑定，
     所以必须 patch curd.news.<name>，只 patch cache.news_cache 不生效。
+    详情服务是按模块引用的（cache.news_cache、cache.lock），patch 模块属性即可。
     """
 
     async def _miss(*args, **kwargs):
@@ -261,12 +262,30 @@ def disable_external_services(monkeypatch) -> None:
     async def _zero(*args, **kwargs):
         return 0
 
+    async def _miss_many(news_ids):
+        return [None] * len(news_ids)
+
+    async def _token(*args, **kwargs):
+        return "test-token"
+
     monkeypatch.setattr("curd.news.get_cache_news_list", _miss)
     monkeypatch.setattr("curd.news.set_cache_news_list", _noop)
     monkeypatch.setattr("curd.news.get_cache_categories", _miss)
     monkeypatch.setattr("curd.news.set_cache_categories", _noop)
-    monkeypatch.setattr("cache.view_counter.increase", _noop)
-    monkeypatch.setattr("cache.view_counter.pending", _zero)
+
+    monkeypatch.setattr("cache.news_cache.get_cache_detail", _miss)
+    monkeypatch.setattr("cache.news_cache.set_cache_detail", _noop)
+    monkeypatch.setattr("cache.news_cache.set_cache_detail_null", _noop)
+    monkeypatch.setattr("cache.news_cache.detail_ttl", lambda: 900)
+
+    monkeypatch.setattr("cache.lock.acquire", _token)
+    monkeypatch.setattr("cache.lock.release", _noop)
+
+    monkeypatch.setattr("cache.view_counter.read", _miss)
+    monkeypatch.setattr("cache.view_counter.read_many", _miss_many)
+    monkeypatch.setattr("cache.view_counter.seed", _noop)
+    monkeypatch.setattr("cache.view_counter.seed_many", _noop)
+    monkeypatch.setattr("cache.view_counter.bump", _zero)
 
     # 登录/注册限流也依赖 Redis：默认放行，专门的用例再自己覆盖这几个函数
     async def _allow(*args, **kwargs):

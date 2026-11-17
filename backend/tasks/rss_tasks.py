@@ -18,7 +18,9 @@ from sqlalchemy import delete, select, text
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 
-from cache.news_cache import invalidate_news_list
+from cache.news_cache import invalidate_detail_many, invalidate_news_list
+from cache.view_counter import delete_many as delete_view_counters
+from config.cache_config import new_client
 from config.db_config import DB_URL, settings
 from models.news import News
 from models.rss import RssFeed
@@ -179,6 +181,7 @@ def fetch_feed(feed_id: int, request_id: str | None = None) -> dict:
 async def _clean_old(days: int) -> int:
     engine = create_async_engine(DB_URL, poolclass=NullPool, echo=False)
     factory = async_sessionmaker(bind=engine, expire_on_commit=False)
+    client = new_client()
     cutoff = datetime.now(CST).replace(tzinfo=None) - timedelta(days=days)
     total = 0
     try:
@@ -209,11 +212,28 @@ async def _clean_old(days: int) -> int:
                 )
                 if not ids:
                     break
+
+                categories = (
+                    (await db.execute(select(News.category_id).where(News.id.in_(ids)).distinct()))
+                    .scalars()
+                    .all()
+                )
                 await db.execute(delete(News).where(News.id.in_(ids)))
                 await db.commit()
                 total += len(ids)
+
+                # 文章已经删了：列表、详情缓存和计数器都要一起清，
+                # 否则缓存还能把已删除的文章返回给用户（点进去才 404）
+                for category_id in categories:
+                    await invalidate_news_list(category_id, client=client)
+                await invalidate_detail_many(ids, client=client)
+                await delete_view_counters(ids, client=client)
         return total
     finally:
+        try:
+            await client.aclose()
+        except Exception:
+            logger.exception("关闭 Redis 客户端失败")
         await engine.dispose()
 
 

@@ -67,10 +67,11 @@ async def test_clean_expired_tokens_deletes_expired(db, auth):
 
 
 class FakeRedis:
-    def __init__(self, dirty=(), deltas=None, fail=False):
+    def __init__(self, dirty=(), values=None, fail=False):
         self.dirty = set(dirty)
-        self.deltas = dict(deltas or {})
+        self.values = dict(values or {})
         self.fail = fail
+        self.evals = []
         self.removed = []
         self.closed = False
 
@@ -79,29 +80,46 @@ class FakeRedis:
             raise RuntimeError("redis down")
         return set(self.dirty)
 
-    async def srem(self, key, member):
-        self.removed.append(member)
+    async def mget(self, keys):
+        if self.fail:
+            raise RuntimeError("redis down")
+        return [self.values.get(key) for key in keys]
 
-    async def getdel(self, key):
-        return self.deltas.get(key)
+    async def srem(self, key, *members):
+        self.removed.extend(members)
+        for member in members:
+            self.dirty.discard(member)
+            self.dirty.discard(str(member))
+        return len(members)
+
+    async def eval(self, script, numkeys, *args):
+        # args = (counter_key, dirty_key, value, member)
+        counter_key, _dirty_key, value, member = args
+        self.evals.append(args)
+        if self.values.get(counter_key) == value:
+            self.dirty.discard(member)
+            return 1
+        return 0
 
     async def aclose(self):
         self.closed = True
 
 
-async def test_flush_once_writes_views(db, make_news, monkeypatch):
+async def test_flush_once_writes_absolute_views(db, make_news, monkeypatch):
     news = await make_news()
     fake = FakeRedis(
         dirty={str(news.id)},
-        deltas={f"news:views:{news.id}": "3"},
+        values={f"news:views:total:{news.id}": "3"},
     )
-    monkeypatch.setattr(view_tasks, "Redis", lambda *args, **kwargs: fake)
+    monkeypatch.setattr(view_tasks, "new_client", lambda: fake)
 
-    total = await view_tasks._flush_once()
+    flushed = await view_tasks._flush_once()
 
-    assert total == 3
-    assert fake.removed == [news.id]
+    assert flushed == 1
+    assert fake.removed == []
     assert fake.closed is True
+    # 落库的是绝对值，不是"views + delta"
+    assert fake.evals[0][2] == "3"
 
     # make_news 里的 refresh 已经开了事务，先结束它才能看到另一个连接提交的值
     await db.rollback()
@@ -109,17 +127,43 @@ async def test_flush_once_writes_views(db, make_news, monkeypatch):
     assert news.views == 3
 
 
+async def test_flush_never_lowers_views(db, make_news, monkeypatch):
+    """两个 flush 重叠时，旧快照后写不能把数据库的数字盖回去。"""
+    news = await make_news(views=105)
+    fake = FakeRedis(
+        dirty={str(news.id)},
+        # 另一个（更慢的）flush 读到的是旧值 100，晚于 105 落库
+        values={f"news:views:total:{news.id}": "100"},
+    )
+    monkeypatch.setattr(view_tasks, "new_client", lambda: fake)
+
+    assert await view_tasks._flush_once() == 1
+
+    await db.rollback()
+    await db.refresh(news)
+    assert news.views == 105
+
+
 async def test_flush_once_without_dirty_returns_zero(db, monkeypatch):
     fake = FakeRedis()
-    monkeypatch.setattr(view_tasks, "Redis", lambda *args, **kwargs: fake)
+    monkeypatch.setattr(view_tasks, "new_client", lambda: fake)
 
     assert await view_tasks._flush_once() == 0
     assert fake.closed is True
 
 
+async def test_flush_once_clears_dirty_when_counter_is_gone(db, monkeypatch):
+    fake = FakeRedis(dirty={"7"}, values={})
+    monkeypatch.setattr(view_tasks, "new_client", lambda: fake)
+
+    assert await view_tasks._flush_once() == 0
+    assert 7 in fake.removed
+    assert fake.dirty == set()
+
+
 async def test_flush_once_propagates_redis_failure(db, monkeypatch):
     fake = FakeRedis(fail=True)
-    monkeypatch.setattr(view_tasks, "Redis", lambda *args, **kwargs: fake)
+    monkeypatch.setattr(view_tasks, "new_client", lambda: fake)
 
     with pytest.raises(RuntimeError):
         await view_tasks._flush_once()

@@ -40,6 +40,22 @@ RATE_LIMIT_REJECTED = Counter(
     ["bucket"],
 )
 
+# 缓存查询结果：kind 是业务分组，result 是本次请求的最终结局（hit / negative / miss）。
+# 标签值必须是有限枚举，绝不能把 news_id、IP、URL 塞进来。
+CACHE_REQUESTS = Counter(
+    "cache_requests_total",
+    "缓存查询结果",
+    ["kind", "result"],
+)
+
+# 缓存读写异常：和 result="miss" 分开看，
+# 否则分不清“缓存没命中”和“缓存根本不可用”（fail-open 时两者都表现为 miss）。
+CACHE_ERRORS = Counter(
+    "cache_errors_total",
+    "缓存读写异常次数",
+    ["op"],
+)
+
 SessionFactory = Callable[[], AsyncSession]
 
 
