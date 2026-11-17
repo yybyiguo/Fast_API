@@ -79,9 +79,7 @@ async def access_log(request: Request, call_next):
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "*"
-    ],
+    allow_origins=["*"],
     allow_credentials=False,  # 允许携带 cookie
     allow_methods=["*"],  # 允许的请求方法
     allow_headers=["*"],  # 允许的请求头
