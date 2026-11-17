@@ -1,34 +1,181 @@
-# 生产环境覆盖文件：只让 web 对外暴露 80，其它服务只在 Docker 网络内互通。
+# 生产专用 Compose：自包含，不再和 docker-compose.yml 叠加。
 #
-# 用法：
-#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# 用法（只需要这一条）：
+#   docker compose -f docker-compose.prod.yml up -d --build
 #
-# 为什么要单独一个文件：基础文件把 mysql/redis/api/rsshub 的端口都映射到了宿主机，
-# 方便本地调试；但生产上 API 一旦能被直连，就可以绕过 Nginx 伪造 X-Forwarded-For，
-# 限流和访问日志都会失真。Docker 发布端口还会绕过主机防火墙，所以必须靠配置保证。
+# 前置条件（.env.docker 里必须同时有，且两个值相同）：
+#   db_password=...
+#   MYSQL_ROOT_PASSWORD=...
 #
-# !reset []   清空基础文件里的 ports（Compose 2.24+ 的合并语法）
-# !override   整段替换，而不是追加
+# 这个文件已经包含：端口收口、重启策略、日志轮转、优雅停机、
+# Redis 内存上限、MySQL 缓冲池、RSSHub 共享内存、web 健康检查。
+# docker-compose.yml 只用于本地开发，生产不再引用它。
+
+name: toutiao
+
+x-backend: &backend
+  build:
+    context: ./backend
+  image: toutiao-backend:local
+  env_file:
+    - .env.docker
+  environment:
+    TZ: Asia/Shanghai
+  restart: unless-stopped
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
 
 services:
   mysql:
-    ports: !reset []
+    image: mysql:8.0
+    env_file:
+      - .env.docker
+    environment:
+      # 必须和 .env.docker 里的 db_name 一致
+      MYSQL_DATABASE: toutiao
+      TZ: Asia/Shanghai
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --default-time-zone=+08:00
+      - --slow-query-log=1
+      - --long-query-time=0.5
+      - --slow-query-log-file=/var/lib/mysql/slow.log
+      - --innodb-buffer-pool-size=256M
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent" ]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 20s
+    restart: unless-stopped
+    logging: *logging
 
   redis:
-    ports: !reset []
+    image: redis:7-alpine
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+      # 只淘汰带 TTL 的 key：缓存可以丢，队列/锁/计数器不会
+      - --maxmemory
+      - 256mb
+      - --maxmemory-policy
+      - volatile-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+    logging: *logging
+
+  migrate:
+    <<: *backend
+    restart: "no"
+    command: [ "uv", "run", "--no-sync", "alembic", "upgrade", "head" ]
+    depends_on:
+      mysql:
+        condition: service_healthy
+    logging: *logging
 
   api:
-    ports: !reset []
+    <<: *backend
+    # 单 worker：/metrics 是进程内注册表，多 worker 会各算各的
+    command: [ "uv", "run", "--no-sync", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1" ]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/readyz', timeout=2)" ]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+      start_period: 20s
+    stop_grace_period: 30s
+    logging: *logging
 
-  rsshub:
-    ports: !reset []
+  worker:
+    <<: *backend
+    command: [ "uv", "run", "--no-sync", "celery", "-A", "tasks.celery_app", "worker", "--loglevel=info", "--concurrency=2" ]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    # 必须比 celery 的 task_time_limit(300s) 大，否则跑到一半被 SIGKILL
+    stop_grace_period: 320s
+    init: true
+    logging: *logging
 
-  prometheus:
-    ports: !reset []
-
-  celery-exporter:
-    ports: !reset []
+  beat:
+    <<: *backend
+    command: [ "uv", "run", "--no-sync", "celery", "-A", "tasks.celery_app", "beat", "--loglevel=info", "--schedule=/tmp/celerybeat-schedule" ]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    stop_grace_period: 30s
+    init: true
+    logging: *logging
 
   web:
-    ports: !override
+    build:
+      context: ./frontend
+    ports:
       - "80:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1" ]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+    logging: *logging
+
+  rsshub:
+    image: diygod/rsshub:chromium-bundled
+    env_file:
+      - .env.docker
+    # Chromium 渲染要共享内存，默认 64MB 会让抖音这类路由崩
+    shm_size: "512mb"
+    volumes:
+      - ./docker/rsshub-patch/douyin-user.mjs:/app/dist/douyin-user-CbGBraE0.mjs:ro
+    restart: unless-stopped
+    logging: *logging
+
+  # 可选：docker compose -f docker-compose.prod.yml --profile observability up -d
+  celery-exporter:
+    image: danihodovic/celery-exporter:latest
+    command: [ "--broker-url=redis://redis:6379/1" ]
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    profiles: [ "observability" ]
+    logging: *logging
+
+  prometheus:
+    image: prom/prometheus:v3.1.0
+    volumes:
+      - ./deploy/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    restart: unless-stopped
+    profiles: [ "observability" ]
+    logging: *logging
+
+volumes:
+  mysql_data:
+  redis_data:

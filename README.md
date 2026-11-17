@@ -116,12 +116,17 @@ docker compose --profile observability up -d
 
 ### 生产部署（只暴露 80）
 
-上面那套会把 mysql/redis/api/rsshub 的端口都映射到宿主机，方便本地调试。
-生产用覆盖文件关掉，只留 web 的 80：
+生产用**独立**的 `docker-compose.prod.yml`，不再和本地开发文件叠加：
 
 ```powershell
-docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml up -d --build
 ```
+
+- 这个文件是自包含的：端口收口、重启策略、日志轮转、优雅停机、
+  Redis 内存上限、MySQL 缓冲池、RSSHub 共享内存、web 健康检查都在里面；
+- `.env.docker` 里必须同时有 `db_password` 和 `MYSQL_ROOT_PASSWORD`，且两个值相同；
+- `docker-compose.yml` 只用于本地开发（会暴露 3307/16380/8001/1200 方便调试）；
+- 需要指标时再叠加 profile：`docker compose -f docker-compose.prod.yml --profile observability up -d`。
 
 - Docker 发布端口会**绕过主机防火墙**，所以“服务器只开 80”要落在配置里，不能只靠 `ufw`；
 - API 不对外暴露后，Nginx 用 `$remote_addr` 覆盖 `X-Forwarded-For`，应用层拿到的 IP 才可信；
