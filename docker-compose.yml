@@ -14,8 +14,11 @@ x-backend: &backend
 services:
   mysql:
     image: mysql:8.0
+    # root 密码来自 .env.docker 的 MYSQL_ROOT_PASSWORD（必须和 db_password 相同）。
+    # 不再写死，避免本地/生产两套密码对不上。
+    env_file:
+      - .env.docker
     environment:
-      MYSQL_ROOT_PASSWORD: toutiao123
       MYSQL_DATABASE: toutiao
       TZ: Asia/Shanghai
     command:
